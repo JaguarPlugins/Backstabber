@@ -31,7 +31,7 @@ options:
     nopos: "[&bbackstabber&f] &4All positions have not been set"
     noreg: "[&bbackstabber&f] &4ERROR: Region has not been set!"
 
-    traitoritem: diamond named "&dTraitor Menu" 
+    traitoritem: diamond named "&dSecret Items" 
 
     n-join: "ui.button.click"
     n-leave: "ui.button.click"
@@ -280,14 +280,14 @@ function startGame():
     {@innocent}
     {@traitor}
     if size of {back.traitors::*} > 1:
-        send "[&bbackstabber&f] Traitors: %{back.traitors::*}%" to {back.traitors::*}
-    send "[&bbackstabber&f] Use /bchat <message> to talk to your fellow traitors secretly" to {back.traitors::*}
+        send "[&bbackstabber&f] Backstabbers: %{back.traitors::*}%" to {back.traitors::*}
+        send "[&bbackstabber&f] Use /bchat <message> to talk to your fellow backstabbers secretly" to {back.traitors::*}
     send "[&bbackstabber&f] Use /bmenu or the diamond to access the menu of secret weaopons" to {back.traitors::*}
     
     loop {back.traitors::*}:
         set {_t} to {back.traitors::%loop-index%}
         set {back.money.%{_t}%} to 2
-        set slot 7 of {_t}'s inventory to a diamond named "&bTraitor Menu"
+        set slot 7 of {_t}'s inventory to {@traitoritem}
 
     updateBoard()
 
@@ -335,7 +335,7 @@ function updateBoard():
         set line 7 of {_pl}'s scoreboard to "&7Players:&r &l%size of {back.players::*}%/8"
         set line 6 of {_pl}'s scoreboard to "&7Karma:&r &l%{_k}%"
         if {back.traitors::*} contains {_pl}:
-            set line 8 of {_pl}'s scoreboard to "&7Tokens:&r &l&d%{back.money.%{_pl}%}%"
+            set line 5 of {_pl}'s scoreboard to "&7Tokens:&r &l&d%{back.money.%{_pl}%}%"
         
 on inventory click:
     if {back.players::*} contains player:
@@ -482,7 +482,7 @@ command backstabber-chat [<string>]:
     aliases: bchat
     trigger:
         if {back.traitors::*} contains player:
-            send "[&cTraitorChat&r] &7%player%:&r %arg-1%" to {back.traitors::*}
+            send "[&cBackstabberChat&r] &7%player%:&r %arg-1%" to {back.traitors::*}
         else:
             send {@trapdeny}
 
