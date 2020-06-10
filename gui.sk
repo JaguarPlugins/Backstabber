@@ -1,0 +1,33 @@
+# Traitor menu
+command backstabber-menu:
+    aliases: bmenu
+    trigger:
+        if {back.traitors::*} contains player:
+            openMenu(player)
+        else:
+            send {@trapdeny}    
+
+on rightclick holding diamond:
+    if {back.players::*} contains player:
+        if {back.traitors::*} contains player:
+            openMenu(player)
+        else:
+            send {@trapdeny}
+
+function openMenu(p:player):
+    set {_len} to size of {back.tw::*}
+    open virtual chest inventory with size 3 named "&nSecret Items" to {_p}
+    loop integers between 1 and {_len}:
+        set {_i} to loop-integer + 9
+        set {_w} to {back.tw::%loop-integer%}
+        format gui slot {_i} of {_p} with {_w} to run:
+            close {_p}'s inventory
+            if {back.money.%{_p}%} > 0:
+                if slot 2 of {_p}'s inventory is air:
+                    set slot 2 of {_p}'s inventory to {_w}
+                    subtract 1 from {back.money.%{_p}%}
+                    updateBoard()
+                else:
+                    send {@2weapons} to {_p}
+            else:
+                send {@nomoney} to {_p}

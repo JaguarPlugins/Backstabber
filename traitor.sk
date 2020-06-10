@@ -1,0 +1,495 @@
+options:
+    game-length: 300
+    
+    join: "[&bbackstabber&f] &aYou joined the game"
+    full: "[&bbackstabber&f] &cGame is full"
+    running: "[&bbackstabber&f] &cGame is running, please wait"
+    already: "[&bbackstabber&f] &cYou are already in a game"
+    leave: "[&bbackstabber&f] &aYou left the game"
+    trapdeny: "[&bbackstabber&f] &cYou are not a backstabber"
+    kick: "[&bbackstabber&f] &cYour karma is too low!"
+    rdm: "&c-10 Karma for RDM. If it gets too low, you will be banned!"
+    lowkarma: "[&bbackstabber&f] &cYou have been weakened due to low karma"
+    dead: send "[&bbackstabber&f] &cYou can't talk when you're dead!"
+    fool: send "[&bbackstabber&f] &aYou fooled them!"
+
+    innocent: set action bar of {back.innocents::*} to "You are &ainnocent&f. Find the backstabbers before it's too late!"
+    traitor: set action bar of {back.traitors::*} to "You are a &cbackstabber&f. Kill all innocents to win!"
+    death: "&6You died!"
+
+    victory-i: send {back.players::*} title "&aInnocents&f win!"
+    victory-t: send {back.players::*} title "&cBackstabbers&f win!"
+
+    noperm: "[&bbackstabber&f] &4You don't have permission"
+    newlocation: "[&bbackstabber&f] &9Location added"
+    clearlocations: "[&bbackstabber&f] &9All locations removed"
+    locationscomplete: "[&bbackstabber&f] &6All required locations added. You can stop now..."
+    cmdusage: "&b&loptions:&r &aaddLocation&r, &aclearLocations&r, &agetWeapons&r"
+    pos1: "[&bbackstabber&f] &9Position 1 set"
+    pos2: "[&bbackstabber&f] &9Position 2 set"
+    region-saved: "[&bbackstabber&f] &9Region generated and saved"
+    nopos: "[&bbackstabber&f] &4All positions have not been set"
+    noreg: "[&bbackstabber&f] &4ERROR: Region has not been set!"
+
+    traitoritem: diamond named "&bTraitor Menu" 
+    nomoney: "[&bbackstabber&f] &cYou don't have any tokens left"
+    2weapons: "[&bbackstabber&f] &cYou already have a secret item equipped"
+
+    n-join: "ui.button.click"
+    n-leave: "ui.button.click"
+    n-innocent: "entity.player.levelup"
+    n-traitor: "entity.elder_guardian.curse"
+    n-detective: "block.brewing_stand.brew" # not yet used
+    n-die: "entity.blaze.death"
+    n-win: "ui.toast.challenge_complete"
+    n-timer: "block.note_block.pling"
+ 
+on load:
+    clear {back.weapons::*}
+    clear {back.ammo::*}
+    clear {back.tw::*}
+    set {back.running} to false
+    clear {back.players::*}
+    clear {back.traitors::*}
+    clear {back.innocents::*}
+    clear {back.naughty::*}
+
+    set {_bat} to a stick of knockback 2 and sharpness 1
+    set name of {_bat} to "&bBat"
+    add {_bat} to {back.weapons::*}
+
+    set {_sword1} to an iron sword
+    set name of {_sword1} to "&bBlunt Sword"
+    add {_sword1} to {back.weapons::*}
+
+    set {_sword2} to an iron sword of sharpness 1
+    set name of {_sword2} to "&bFine Blade"
+    add {_sword2} to {back.weapons::*}
+
+    set {_sword3} to an iron sword of sharpness 2
+    set name of {_sword3} to "&bSharp Sword"
+    add {_sword3} to {back.weapons::*}
+
+    set {_flame} to a gold sword of fire aspect 2
+    set name of {_flame} to "&bInferno Blade"
+    add {_flame} to {back.weapons::*}
+
+    set {_bow1} to a bow
+    set name of {_bow1} to "&bPistol"
+    add {_bow1} to {back.weapons::*}
+
+    set {_bow2} to a bow of power 1
+    set name of {_bow2} to "&bHuntsman Rifle"
+    add {_bow2} to {back.weapons::*}
+
+    set {_bow3} to a bow of power 2
+    set name of {_bow3} to "&bMarksman Rifle"
+    add {_bow3} to {back.weapons::*}
+
+    set {_crossbow} to a crossbow of multishot 1 and power 1
+    set name of {_crossbow} to "&bShotgun"
+    add {_crossbow} to {back.weapons::*}
+
+    set {_heavy} to a crossbow of multishot 1 and power 2
+    set name of {_heavy} to "&bHeavy Shotgun"
+    add {_heavy} to {back.weapons::*}
+
+    set {_arrow} to an arrow
+    add {_arrow} to {back.ammo::*}
+
+    set {_knife} to a diamond sword of sharpness 100
+    set durability of {_knife} to 1560
+    set name of {_knife} to "&dBackstabber"
+    add {_knife} to {back.tw::*}
+
+    set {_trident} to a trident named "&dTrident"
+    set durability of {_trident} to 247
+    add {_trident} to {back.tw::*}
+
+# Joining
+on rightclick on sign:
+    
+    if 1st line of clicked block is "[backstabber]":
+        
+        if {back.karma::%player%} is not set:
+            set {back.karma::%player%} to 100
+        if {back.karma::%player%} > 0:
+            if size of {back.players::*} < 8: 
+                if {back.running} is not true:
+                    if {back.players::*} does not contain player:
+
+                        # Player joins
+                        add player to {back.players::*}
+                        set {back.%player%.role} to "None"
+
+                        set {back.%player%.old-loc} to player's location
+                        set {_len} to size of {back.players::*}
+                        teleport player to {back.spawns::%{_len}%}
+
+                        if {back.karma::%player%} <= 50:
+                            apply ambient potion of weakness of tier 1 to player for 100000 seconds
+                            send {@lowkarma}
+
+                        set player's gamemode to survival
+                        apply ambient potion of saturation of tier 2 to player for 100000 seconds
+                        heal player
+                        clear player's inventory
+                        set slot 8 of player's inventory to a slime ball named "&cLeave"
+
+                        clear scoreboard of player
+                        updateBoard()
+                        toggle scoreboard of player on
+                        noise("join", player)
+
+                        send {@join}
+                        
+                    else:
+                        send {@already}
+                else:
+                    send {@running}
+            else:
+                send {@full}
+        else:
+            send {@kick}
+
+    if 1st line of clicked block is "[test]":
+        loop {back.players::*}:
+            set {_player} to {back.players::%loop-index%}
+            teleport {_player} to {back.%{_player}%.old-loc}
+
+
+# Leaving
+on rightclick holding slime ball:
+    if {back.players::*} contains player:
+        noise("leave", player)
+        leaveGame(player)
+
+every 20 ticks:
+
+    if size of {back.players::*} > 1:
+        
+        if {back.running} is false:
+
+            if {back.timer} > 0:
+                subtract 1 from {back.timer}
+                updateBoard()
+
+                if {back.timer} < 1:
+                    startGame()
+                    
+                else if {back.timer} <= 3:
+                    noise("timer", {back.players::*})
+        
+        else if {back.running} is true:
+            
+            if {back.timer} > 0:
+                subtract 1 from {back.timer}
+                updateBoard()
+
+                if {back.timer} < 1:
+                    {@victory-i}
+                    endGame()
+
+on death:
+
+    if {back.players::*} contains player:
+        
+        cancel event
+
+        if {back.innocents::*} contains attacker:
+            if {back.naughty::*} does not contain player:
+                if {back.innocents::*} contains player:
+                    naughty(attacker)
+
+        noise("die", player)
+        set player's gamemode to spectator
+        send player title {@death}
+        remove player from {back.innocents::*}
+        remove player from {back.traitors::*}
+        wait 0.5 seconds
+        if size of {back.traitors::*} < 1:
+            {@victory-i}
+            endGame()
+        else if size of {back.innocents::*} < 1:
+            {@victory-t}
+            endGame() 
+
+on damage:
+
+    if {back.players::*} contains player:
+        if {back.running} is not true:
+            cancel event
+        else if {back.running} is true:
+
+            if {back.innocents::*} contains player:
+                if {back.naughty::*} does not contain player:
+                    if {back.innocents::*} contains attacker:
+
+                        add attacker to {back.naughty::*}
+
+on quit:
+
+    if {back.players::*} contains player:
+        leaveGame(player)
+
+function endGame():
+    
+    noise("win", {back.players::*})
+    set {_loop::*} to {back.players::*}
+    loop {_loop::*}:
+        set {_player} to {_loop::%loop-index%}
+        if {back.naughty::*} does not contain {_player}:
+            if {back.karma::%{_player}%} < 99:
+                add 2 to {back.karma::%{_player}%}
+            else:
+                set {back.karma::%{_player}%} to 100
+        leaveGame({_player})
+
+function startGame():
+    
+    clear {back.traitors::*}
+    clear {back.innocents::*}
+    clear {back.naughty::*}
+    set {back.running} to true
+    set {back.timer} to {@game-length}
+    loop {back.players::*}:
+        set {_i} to {back.players::%loop-index%}
+        set {back.%{_i}%.role} to "&aInnocent"
+        add {_i} to {back.innocents::*}
+
+    set {_t-num} to 1
+    set {_len} to size of {back.players::*}
+    if {_len} > 5: 
+        add 1 to {_t-num}
+    if {_len} > 9:
+        add 1 to {_t-num}
+
+    loop {_t-num} times:
+        set {_inno::*} to {back.innocents::*}
+        set {_traitor-index} to a random integer between 1 and size of {_inno::*}
+
+        set {_t} to {_inno::%{_traitor-index}%}
+        set {back.%{_t}%.role} to "&cBackstabber"
+        remove {_t} from {back.innocents::*}
+        add {_t} to {back.traitors::*}
+
+    updateBoard()
+        
+    {@innocent}
+    {@traitor}
+    if size of {back.traitors::*} > 1:
+        send "[&bbackstabber&f] Traitors: %{back.traitors::*}%" to {back.traitors::*}
+    send "[&bbackstabber&f] Use /bchat <message> to talk to your fellow traitors secretly" to {back.traitors::*}
+    send "[&bbackstabber&f] Use /bmenu to access the menu of secret weaopons" to {back.traitors::*}
+    
+    loop {back.traitors::*}:
+        set {_t} to {back.traitors::%loop-index%}
+        set {back.money.%{_t}%} to 2
+        set slot 7 of {_t}'s inventory to a diamond named "&bTraitor Menu"
+
+    noise("start", {back.players::*})
+
+function debug():
+
+    broadcast "Naughty: %{back.naughty::*}%"
+    # broadcast "Players: %{back.players::*}% (%size of {back.players::*}%)"
+    # broadcast "Innocents: %{back.innocents::*}% (%size of {back.innocents::*}%)"
+    # broadcast "Traitors: %{back.traitors::*}% (%size of {back.traitors::*}%)"
+
+function leaveGame(p:player):
+
+    toggle scoreboard of {_p} off
+    set action bar of {_p} to ""
+    remove all potion effects from {_p}
+    heal {_p}
+    clear {_p}'s inventory
+    set gamemode of {_p} to survival
+    remove {_p} from {back.naughty::*}
+    remove {_p} from {back.players::*}
+    remove {_p} from {back.innocents::*}
+    remove {_p} from {back.traitors::*}
+    set {back.%{_p}%.role} to "None"
+    teleport {_p} to {back.%{_p}%.old-loc}
+    send {@leave} to {_p}
+    if size of {back.players::*} < 2:
+        # Game ends
+        set {back.running} to false
+        set {back.timer} to 20
+
+function updateBoard():
+
+    loop {back.players::*}:
+
+        set {_pl} to {back.players::%loop-index%}
+        set {_k} to {back.karma::%{_pl}%}
+
+        set title of {_pl}'s scoreboard to "&b&nBACKSTABBER"
+        set line 13 of {_pl}'s scoreboard to ""
+        set line 12 of {_pl}'s scoreboard to "&7Time:&r &l%{back.timer}% s"
+        set line 11 of {_pl}'s scoreboard to "&7Role:&r &l%{back.%{_pl}%.role}%"
+        set line 10 of {_pl}'s scoreboard to "&7Players:&r &l%size of {back.players::*}%/8"
+        set line 9 of {_pl}'s scoreboard to "&7Karma:&r &l%{_k}%"
+        if {back.traitors::*} contains {_pl}:
+            set line 8 of {_pl}'s scoreboard to "&7Tokens:&r &l&d%{back.money.%{_pl}%}%"
+        
+on inventory click:
+    if {back.players::*} contains player:
+        if clicked slot is 13:
+            if {back.weapons::*} contains item:
+                close player's inventory
+                set slot 0 of player's inventory to item
+            else if {back.ammo::*} contains item:
+                close player's inventory
+                set slot 1 of player's inventory to item
+
+on rightclick on stone button:
+    
+    # Very long winded but simple way did not work
+    if {back.players::*} contains player:
+        if {back.traitors::*} does not contain player:
+            cancel event
+            send {@trapdeny}
+
+on leftclick on stone button:
+    
+    if {back.players::*} contains player:
+        if {back.traitors::*} contains player:
+            cancel event
+            {@fool}
+
+function giveWeapon(p:player):
+
+    give {_p} {back.weapons::*}
+
+function noise(s: string, p: player):
+    if {_s} is "start":
+        loop {back.innocents::*}:
+            set {_i} to {back.innocents::%loop-index%}
+            play sound {@n-innocent} with volume 1000 and pitch 1 at {_i}'s location for {_i}
+        loop {back.traitors::*}:
+            set {_t} to {back.traitors::%loop-index%}
+            play sound {@n-traitor} with volume 1000 and pitch 1 at {_t}'s location for {_t}
+    if {_s} is "die":
+        play sound {@n-die} with volume 1000 and pitch 2 at {_p}'s location for {_p}
+    if {_s} is "win":
+        loop {back.players::*}:
+            play sound {@n-win} with volume 1000 and pitch 1 at {back.players::%loop-index%}'s location for {back.players::%loop-index%}
+    if {_s} is "join":
+        play sound {@n-join} with volume 1000 and pitch 1 at {_p}'s location for {_p}
+    if {_s} is "timer":
+        loop {back.players::*}:
+            play sound {@n-timer} with volume 1000 and pitch 1 at {back.players::%loop-index%}'s location for {back.players::%loop-index%}
+    if {_s} is "leave":
+        play sound {@n-leave} with volume 1000 and pitch 1 at {_p}'s location for {_p}
+
+function naughty(p:player):
+    subtract 10 from {back.karma::%{_p}%}
+    set action bar of {_p} to {@rdm}
+    add {_p} to {back.naughty::*}
+    if {back.karma::%{_p}%} <= 0:
+        send {@kick} to {_p}
+        leaveGame({_p})
+
+# function regenerate():
+#     if {back.reg.blocks::*} is set:
+#         loop {back.reg.blocks::*}:
+#             set block at location loop-index to loop-value
+#     else:
+#         broadcast {@noreg}
+
+
+command traitoradmin [<string>]:
+    executable by: players
+    usage: {@cmdusage}
+    permission: traitor.admin
+    permission message: {@noperm}
+    aliases: ttadmin
+    trigger:
+        if arg-1 = "addLocation":
+            add player's location to {back.spawns::*}
+            send {@newlocation}
+            if size of {back.spawns::*} >= 8:
+                send {@locationscomplete}
+        else if arg-1 = "clearLocations":
+            clear {back.spawns::*}
+            send {@clearlocations}
+        else if arg-1 = "getWeapons":
+            give player {back.weapons::*}
+            give player {back.ammo::*}
+        
+
+
+        else if arg-1 = "pos1":
+            set {back.reg.pos1} to player's location
+            send {@pos1}
+        else if arg-1 = "pos2":
+            set {back.reg.pos2} to player's location
+            send {@pos2}
+        # else if arg-1 = "saveRegion":
+        #     if {back.reg.pos1} is set:
+        #         if {back.reg.pos2} is set:
+        #             loop blocks between {back.reg.pos1} and {back.reg.pos2}:
+        #                 set {back.reg.blocks::%location of loop-block%} to loop-block
+        #             send {@region-saved}
+        #         else:
+        #             send {@nopos}
+        #     else:
+        #         send {@nopos}
+
+        else:
+            send {@cmdusage}
+
+# Inventory Locking
+on inventory click:
+    if {back.players::*} contains player:
+        cancel event
+
+on drop:
+    if {back.players::*} contains player:
+        cancel event
+
+on swap hand items:
+    if {back.players::*} contains player:
+        cancel event
+
+# Chat
+on chat:
+    
+    if {back.players::*} contains player:
+
+        if {back.running} is true:
+            if {back.innocents::*} does not contain player:
+                if {back.traitors::*} does not contain player:
+                    cancel event
+                    {@dead}
+                
+command backstabber-chat [<string>]:
+    executable by: players
+    permission message: "&cPlease contact Nunghung immediately! Something has gone horrible wrong!"
+    aliases: bchat
+    trigger:
+        if {back.traitors::*} contains player:
+            send "[&cTraitorChat&r] &7%player%:&r %arg-1%" to {back.traitors::*}
+        else:
+            send {@trapdeny}
+
+# building
+on block damage:
+    if {back.players::*} contains player:
+        cancel event
+
+# HALFBUG - if traitor leaves, game is pointless
+# HALFBUG - burining at the end
+
+# TODO map regen
+# TODO tab list
+
+# TODO inform all on join
+
+# TODO player bodies (last damage cause in tuske)
+# TODO C4 TNT
+
+# TODO traitor tester
+
+# TODO Tablist says whether alive/dead
+# TODO increase limit
