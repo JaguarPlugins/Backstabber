@@ -31,7 +31,7 @@ options:
     nopos: "[&bbackstabber&f] &4All positions have not been set"
     noreg: "[&bbackstabber&f] &4ERROR: Region has not been set!"
 
-    traitoritem: diamond named "&bTraitor Menu" 
+    traitoritem: diamond named "&dTraitor Menu" 
 
     n-join: "ui.button.click"
     n-leave: "ui.button.click"
@@ -102,11 +102,13 @@ on load:
     set name of {_knife} to "&dBackstabber"
     add {_knife} to {back.tw::*}
 
-    set {_trident} to a trident of loyalty 1 
-    set name of {_trident} to "&dTrident"
-    set line 1 of lore of {_trident} to "3x uses"
-    set durability of {_trident} to 247
-    add {_trident} to {back.tw::*}
+    # -------- TRIDENT PICKUP BROKEN --------- 
+
+    # set {_trident} to a trident of loyalty 1
+    # set name of {_trident} to "&dTrident"
+    # set line 1 of lore of {_trident} to "1x use"
+    # set durability of {_trident} to 249
+    # add {_trident} to {back.tw::*}
 
 # Joining
 on rightclick on sign:
@@ -129,11 +131,11 @@ on rightclick on sign:
                         teleport player to {back.spawns::%{_len}%}
 
                         if {back.karma::%player%} <= 50:
-                            apply ambient potion of weakness of tier 1 to player for 100000 seconds
+                            apply potion of weakness of tier 1 without any particles to player for 100000 seconds
                             send {@lowkarma}
 
                         set player's gamemode to survival
-                        apply ambient potion of saturation of tier 2 to player for 100000 seconds
+                        apply potion of saturation of tier 2 without any particles to player for 100000 seconds
                         heal player
                         clear player's inventory
                         set slot 8 of player's inventory to a slime ball named "&cLeave"
@@ -144,7 +146,7 @@ on rightclick on sign:
                         noise("join", player)
 
                         send {@join}
-                        
+
                     else:
                         send {@already}
                 else:
@@ -274,20 +276,20 @@ function startGame():
         set {back.%{_t}%.role} to "&cBackstabber"
         remove {_t} from {back.innocents::*}
         add {_t} to {back.traitors::*}
-
-    updateBoard()
         
     {@innocent}
     {@traitor}
     if size of {back.traitors::*} > 1:
         send "[&bbackstabber&f] Traitors: %{back.traitors::*}%" to {back.traitors::*}
     send "[&bbackstabber&f] Use /bchat <message> to talk to your fellow traitors secretly" to {back.traitors::*}
-    send "[&bbackstabber&f] Use /bmenu to access the menu of secret weaopons" to {back.traitors::*}
+    send "[&bbackstabber&f] Use /bmenu or the diamond to access the menu of secret weaopons" to {back.traitors::*}
     
     loop {back.traitors::*}:
         set {_t} to {back.traitors::%loop-index%}
         set {back.money.%{_t}%} to 2
         set slot 7 of {_t}'s inventory to a diamond named "&bTraitor Menu"
+
+    updateBoard()
 
     noise("start", {back.players::*})
 
@@ -302,7 +304,8 @@ function leaveGame(p:player):
 
     toggle scoreboard of {_p} off
     set action bar of {_p} to ""
-    remove all potion effects from {_p}
+    remove saturation from {_p}
+    remove weakness from {_p}
     heal {_p}
     clear {_p}'s inventory
     set gamemode of {_p} to survival
@@ -326,11 +329,11 @@ function updateBoard():
         set {_k} to {back.karma::%{_pl}%}
 
         set title of {_pl}'s scoreboard to "&b&nBACKSTABBER"
-        set line 13 of {_pl}'s scoreboard to ""
-        set line 12 of {_pl}'s scoreboard to "&7Time:&r &l%{back.timer}% s"
-        set line 11 of {_pl}'s scoreboard to "&7Role:&r &l%{back.%{_pl}%.role}%"
-        set line 10 of {_pl}'s scoreboard to "&7Players:&r &l%size of {back.players::*}%/8"
-        set line 9 of {_pl}'s scoreboard to "&7Karma:&r &l%{_k}%"
+        set line 10 of {_pl}'s scoreboard to ""
+        set line 9 of {_pl}'s scoreboard to "&7Time:&r &l%{back.timer}% s"
+        set line 8 of {_pl}'s scoreboard to "&7Role:&r &l%{back.%{_pl}%.role}%"
+        set line 7 of {_pl}'s scoreboard to "&7Players:&r &l%size of {back.players::*}%/8"
+        set line 6 of {_pl}'s scoreboard to "&7Karma:&r &l%{_k}%"
         if {back.traitors::*} contains {_pl}:
             set line 8 of {_pl}'s scoreboard to "&7Tokens:&r &l&d%{back.money.%{_pl}%}%"
         
@@ -436,10 +439,18 @@ command traitoradmin [<string>]:
         #         else:
         #             send {@nopos}
         #     else:
-        #         send {@nopos}
+        #         send {@nopos}            
 
         else:
             send {@cmdusage}
+
+command setKarma [<player>] [<integer>]:
+    executable by: players and console
+    usage: "/setKarma <player> <karma>"
+    permission: traitor.karma
+    trigger:
+        set {back.karma::%arg-player%} to arg-2
+        send "[&bbackstabber&f] &9sucessfully set %arg-player%'s karma to %arg-2%"
 
 # Inventory Locking
 on inventory click:
@@ -477,6 +488,10 @@ command backstabber-chat [<string>]:
 
 # building
 on block damage:
+    if {back.players::*} contains player:
+        cancel event
+        
+on pick up:
     if {back.players::*} contains player:
         cancel event
 
