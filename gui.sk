@@ -1,4 +1,9 @@
 # Traitor menu
+options:
+    nomoney: "[&bbackstabber&f] &cYou don't have any tokens left"
+    2weapons: "[&bbackstabber&f] &cYou already have a secret item equipped"
+    trapdeny: "[&bbackstabber&f] &cYou are not a backstabber"
+
 command backstabber-menu:
     aliases: bmenu
     trigger:
