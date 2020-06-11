@@ -32,6 +32,9 @@ options:
     noreg: "[&bbackstabber&f] &4ERROR: Region has not been set!"
 
     traitoritem: diamond named "&dSecret Items" 
+    nomoney: "[&bbackstabber&f] &cYou don't have any tokens left"
+    2weapons: "[&bbackstabber&f] &cYou already have a secret item equipped"
+    trapdeny: "[&bbackstabber&f] &cYou are not a backstabber"
 
     n-join: "ui.button.click"
     n-leave: "ui.button.click"
@@ -494,6 +497,46 @@ on block damage:
 on pick up:
     if {back.players::*} contains player:
         cancel event
+
+# Traitor Menu
+command backstabber-menu:
+    aliases: bmenu
+    trigger:
+        if {back.traitors::*} contains player:
+            openMenu(player)
+        else:
+            send {@trapdeny}    
+
+on rightclick holding diamond:
+    if {back.players::*} contains player:
+        if {back.traitors::*} contains player:
+            openMenu(player)
+        else:
+            send {@trapdeny}
+
+function openMenu(p:player):
+    set {_len} to size of {back.tw::*}
+    set metadata tag "secretItems" of {_p} to chest inventory with 3 rows named "&nSecret Items"
+    loop integers between 1 and {_len}:
+        set {_i} to loop-integer + 9
+        set {_w} to {back.tw::%loop-integer%}
+        set slot {_i} of metadata tag "secretItems" of {_p} to {_w}
+        open (metadata tag "secretItems" of {_p}) to {_p}
+            
+on inventory click:
+    if {back.traitors::*} contains player:
+        if event-inventory = (metadata tag "secretItems" of player):
+            cancel event
+            close player's inventory
+            if {back.money.%player%} > 0:
+                if slot 2 of player's inventory is air:
+                    set slot 2 of player's inventory to item
+                    subtract 1 from {back.money.%player%}
+                    updateBoard()
+                else:
+                    send {@2weapons} to player
+            else:
+                send {@nomoney} to player
 
 # HALFBUG - if traitor leaves, game is pointless
 # HALFBUG - burining at the end
