@@ -95,6 +95,7 @@ on load:
     set name of {_heavy} to "&bHeavy Shotgun"
     add {_heavy} to {back.weapons::*}
 
+    # TODO make ammo names &3 (dark_aqua)
     set {_arrow} to an arrow
     add {_arrow} to {back.ammo::*}
 
@@ -105,13 +106,11 @@ on load:
     set name of {_knife} to "&dBackstabber"
     add {_knife} to {back.tw::*}
 
-    # -------- TRIDENT PICKUP BROKEN --------- 
-
-    # set {_trident} to a trident of loyalty 1
-    # set name of {_trident} to "&dTrident"
-    # set line 1 of lore of {_trident} to "1x use"
-    # set durability of {_trident} to 249
-    # add {_trident} to {back.tw::*}
+    set {_trident} to a trident of loyalty 3
+    set name of {_trident} to "&dTrident"
+    set line 1 of lore of {_trident} to "Limited use"
+    set durability of {_trident} to 240
+    add {_trident} to {back.tw::*}
 
 # Joining
 on rightclick on sign:
@@ -309,6 +308,7 @@ function leaveGame(p:player):
     set action bar of {_p} to ""
     remove saturation from {_p}
     remove weakness from {_p}
+    extinguish {_p}
     heal {_p}
     clear {_p}'s inventory
     set gamemode of {_p} to survival
@@ -453,7 +453,7 @@ command setKarma [<player>] [<integer>]:
     permission: traitor.karma
     trigger:
         set {back.karma::%arg-player%} to arg-2
-        send "[&bbackstabber&f] &9sucessfully set %arg-player%'s karma to %arg-2%"
+        send "[&bbackstabber&f] &9sucessfully set &f%arg-player%'s &9karma to &f%arg-2%"
 
 # Inventory Locking
 on inventory click:
@@ -497,6 +497,10 @@ on block damage:
 on pick up:
     if {back.players::*} contains player:
         cancel event
+        if {back.traitors::*} contains player:
+            if item is trident:
+                delete entity
+                set slot 2 of player's inventory to item
 
 # Traitor Menu
 command backstabber-menu:
