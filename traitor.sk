@@ -250,6 +250,7 @@ function endGame():
             else:
                 set {back.karma::%{_player}%} to 100
         leaveGame({_player})
+    loadChests()
 
 function startGame():
     
@@ -323,6 +324,8 @@ function leaveGame(p:player):
         # Game ends
         set {back.running} to false
         set {back.timer} to 20
+        if size of {back.players::*} < 1:
+            loadChests()
 
 function updateBoard():
 
@@ -343,12 +346,33 @@ function updateBoard():
 on inventory click:
     if {back.players::*} contains player:
         if clicked slot is 13:
-            if {back.weapons::*} contains item:
-                close player's inventory
-                set slot 0 of player's inventory to item
-            else if {back.ammo::*} contains item:
-                close player's inventory
-                set slot 1 of player's inventory to item
+            # Saves chest contents to a varible
+            if target block of player is a chest:
+                set {_inv} to event-inventory's holder
+                if {_inv} is a chest:
+                    if item != air:
+                        if {back.chestLocs::*} does not contain (location of {_inv}):
+                            add location of {_inv} to {back.chestLocs::*}
+                            add item to {back.chestItems::*}
+
+                        set {_item} to item
+
+                        set {_safeweapon} to {_item}
+                        set durability of {_safeweapon} to 0
+                        if {back.weapons::*} contains {_safeweapon}:
+                            close player's inventory
+                            remove item from event-inventory
+                            set {_olditem} to slot 0 of player's inventory
+                            if {_olditem} is not air:
+                                set slot 13 of event-inventory to {_olditem}
+                            set slot 0 of player's inventory to {_item}
+                        else if {back.ammo::*} contains item:
+                            close player's inventory
+                            remove item from event-inventory
+                            set {_olditem} to slot 1 of player's inventory
+                            if {_olditem} is not air:
+                                set slot 13 of event-inventory to {_olditem}
+                            set slot 1 of player's inventory to {_item}
 
 on rightclick on stone button:
     
@@ -542,8 +566,20 @@ on inventory click:
             else:
                 send {@nomoney} to player
 
+function loadChests():
+    set {_chestLocs::*} to {back.chestLocs::*}
+    set {_chestItems::*} to {back.chestItems::*}
+    loop {_chestLocs::*}:
+        set {_loc} to {_chestLocs::%loop-index%}
+        set {_item} to {_chestItems::%loop-index%}
+        set block at {_loc} to a chest
+        set {_block} to block at {_loc}
+        set slot 13 of {_block}'s inventory to {_item}
+        remove {_item} from {back.chestItems::*}
+        remove {_loc} from {back.chestLocs::*}
+            
+
 # HALFBUG - if traitor leaves, game is pointless
-# HALFBUG - burining at the end
 
 # TODO map regen
 # TODO tab list
