@@ -324,8 +324,15 @@ function leaveGame(p:player):
         # Game ends
         set {back.running} to false
         set {back.timer} to 20
+        loop {back.players::*}:
+            set {back.%loop-value%.role} to "None"
         if size of {back.players::*} < 1:
             loadChests()
+    if {back.running} is true:
+        if (size of {back.traitors::*}) is 0:
+            endGame()
+        if (size of {back.innocents::*}) is 0:
+            endGame()
 
 function updateBoard():
 
