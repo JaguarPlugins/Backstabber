@@ -1,9 +1,5 @@
 options:
     game-length: 300
-    win-money-t: 500
-    money-t: "[&bbackstabber&f] &aYou earned ₴500 for winning as backstabber"
-    win-money-i: 250
-    money-i: "[&bbackstabber&f] &aYou earned ₴250 for winning as innocent"
 
     join: "[&bbackstabber&f] &aYou joined the game"
     full: "[&bbackstabber&f] &cGame is full"
@@ -219,15 +215,17 @@ on death:
         wait 1 second
         if size of {back.traitors::*} < 1:
             {@victory-i}
-            add {@win-money-i} to balance of {back.innocents::*}
-            send {@money-i} to {back.innocents::*}
+            set {_win} to (50 * (size of {back.players::*}))
+            add {_win} to balance of {back.innocents::*}
+            send "[&bbackstabber&f] &aYou earned ₴%{_win}% for winning as innocent" to {back.innocents::*}
             noise("win", {back.players::*})
             wait 4 seconds
             endGame()
         else if size of {back.innocents::*} < 1:
             {@victory-t}
-            add {@win-money-t} to balance of {back.traitors::*}
-            send {@money-t} to {back.traitors::*}
+            set {_win} to (100 * (size of {back.players::*}))
+            add {_win} to balance of {back.traitors::*}
+            send "[&bbackstabber&f] &aYou earned ₴%{_win}% for winning as traitor" to {back.traitors::*}
             noise("win", {back.players::*})
             wait 4 seconds
             endGame() 
