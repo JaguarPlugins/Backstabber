@@ -1,6 +1,10 @@
 options:
     game-length: 300
-    
+    win-money-t: 500
+    money-t: "[&bbackstabber&f] &aYou earned ₴500 for winning as backstabber"
+    win-money-i: 250
+    money-i: "[&bbackstabber&f] &aYou earned ₴250 for winning as innocent"
+
     join: "[&bbackstabber&f] &aYou joined the game"
     full: "[&bbackstabber&f] &cGame is full"
     running: "[&bbackstabber&f] &cGame is running, please wait"
@@ -16,6 +20,7 @@ options:
     innocent: set action bar of {back.innocents::*} to "You are &ainnocent&f. Find the backstabbers before it's too late!"
     traitor: set action bar of {back.traitors::*} to "You are a &cbackstabber&f. Kill all innocents to win!"
     death: "&6You died!"
+    cancel: "[&bbackstabber&f] &6Game cancelled"
 
     victory-i: send {back.players::*} title "&aInnocents&f win!"
     victory-t: send {back.players::*} title "&cBackstabbers&f win!"
@@ -211,12 +216,20 @@ on death:
         send player title {@death}
         remove player from {back.innocents::*}
         remove player from {back.traitors::*}
-        wait 0.5 seconds
+        wait 1 second
         if size of {back.traitors::*} < 1:
             {@victory-i}
+            add {@win-money-i} to balance of {back.innocents::*}
+            send {@money-i} to {back.innocents::*}
+            noise("win", {back.players::*})
+            wait 4 seconds
             endGame()
         else if size of {back.innocents::*} < 1:
             {@victory-t}
+            add {@win-money-t} to balance of {back.traitors::*}
+            send {@money-t} to {back.traitors::*}
+            noise("win", {back.players::*})
+            wait 4 seconds
             endGame() 
 
 on damage:
@@ -239,6 +252,7 @@ on quit:
 
 function endGame():
     
+    set {back.running} to false
     set {_loop::*} to {back.players::*}
     loop {_loop::*}:
         set {_player} to {_loop::%loop-index%}
@@ -248,7 +262,6 @@ function endGame():
             else:
                 set {back.karma::%{_player}%} to 100
         leaveGame({_player})
-    noise("win", {back.players::*})
     loadChests()
 
 function startGame():
@@ -329,8 +342,10 @@ function leaveGame(p:player):
             loadChests()
     if {back.running} is true:
         if (size of {back.traitors::*}) is 0:
+            send {@cancel} to {back.players::*}
             endGame()
         if (size of {back.innocents::*}) is 0:
+            send {@cancel} to {back.players::*}
             endGame()
 
 function updateBoard():
@@ -516,6 +531,10 @@ on block damage:
     if {back.players::*} contains player:
         cancel event
         
+on block break:
+    if {back.players::*} contains player:
+        cancel event
+
 on pick up:
     if {back.players::*} contains player:
         cancel event
