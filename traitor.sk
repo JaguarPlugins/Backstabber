@@ -142,6 +142,7 @@ on rightclick on sign:
                         clear player's inventory
                         set slot 8 of player's inventory to a slime ball named "&cLeave"
 
+                        hide the tab of player for {back.players::*}
                         clear scoreboard of player
                         updateBoard()
                         toggle scoreboard of player on
@@ -306,6 +307,7 @@ function debug():
 function leaveGame(p:player):
 
     toggle scoreboard of {_p} off
+    show the tab of {_p} for {back.players::*}
     set action bar of {_p} to ""
     remove saturation from {_p}
     remove weakness from {_p}
@@ -584,7 +586,6 @@ function loadChests():
         set slot 13 of {_block}'s inventory to {_item}
         remove {_item} from {back.chestItems::*}
         remove {_loc} from {back.chestLocs::*}
-            
 
 # HALFBUG - if traitor leaves, game is pointless
 
