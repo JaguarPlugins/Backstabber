@@ -142,7 +142,7 @@ on rightclick on sign:
                         clear player's inventory
                         set slot 8 of player's inventory to a slime ball named "&cLeave"
 
-                        hide the tab of player for {back.players::*}
+                        hide the tab of {back.players::*} for {back.players::*}
                         clear scoreboard of player
                         updateBoard()
                         toggle scoreboard of player on
@@ -307,7 +307,6 @@ function debug():
 function leaveGame(p:player):
 
     toggle scoreboard of {_p} off
-    show the tab of {_p} for {back.players::*}
     set action bar of {_p} to ""
     remove saturation from {_p}
     remove weakness from {_p}
@@ -322,6 +321,7 @@ function leaveGame(p:player):
     set {back.%{_p}%.role} to "None"
     teleport {_p} to {back.%{_p}%.old-loc}
     send {@leave} to {_p}
+    show the tab of {_p} for all players
     if size of {back.players::*} < 2:
         # Game ends
         set {back.running} to false
