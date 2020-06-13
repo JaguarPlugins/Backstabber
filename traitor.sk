@@ -95,7 +95,6 @@ on load:
     set name of {_heavy} to "&bHeavy Shotgun"
     add {_heavy} to {back.weapons::*}
 
-    # TODO make ammo names &3 (dark_aqua)
     set {_arrow} to an arrow
     add {_arrow} to {back.ammo::*}
 
@@ -142,7 +141,6 @@ on rightclick on sign:
                         clear player's inventory
                         set slot 8 of player's inventory to a slime ball named "&cLeave"
 
-                        hide the tab of {back.players::*} for {back.players::*}
                         clear scoreboard of player
                         updateBoard()
                         toggle scoreboard of player on
@@ -241,7 +239,6 @@ on quit:
 
 function endGame():
     
-    noise("win", {back.players::*})
     set {_loop::*} to {back.players::*}
     loop {_loop::*}:
         set {_player} to {_loop::%loop-index%}
@@ -251,6 +248,7 @@ function endGame():
             else:
                 set {back.karma::%{_player}%} to 100
         leaveGame({_player})
+    noise("win", {back.players::*})
     loadChests()
 
 function startGame():
@@ -321,7 +319,6 @@ function leaveGame(p:player):
     set {back.%{_p}%.role} to "None"
     teleport {_p} to {back.%{_p}%.old-loc}
     send {@leave} to {_p}
-    show the tab of {_p} for all players
     if size of {back.players::*} < 2:
         # Game ends
         set {back.running} to false
@@ -354,6 +351,7 @@ function updateBoard():
         
 on inventory click:
     if {back.players::*} contains player:
+        cancel event
         if clicked slot is 13:
             # Saves chest contents to a varible
             if target block of player is a chest:
@@ -382,6 +380,19 @@ on inventory click:
                             if {_olditem} is not air:
                                 set slot 13 of event-inventory to {_olditem}
                             set slot 1 of player's inventory to {_item}
+        
+        if {back.traitors::*} contains player:
+            if event-inventory = (metadata tag "secretItems" of player):
+                close player's inventory
+                if {back.money.%player%} > 0:
+                    if slot 2 of player's inventory is air:
+                        set slot 2 of player's inventory to item
+                        subtract 1 from {back.money.%player%}
+                        updateBoard()
+                    else:
+                        send {@2weapons} to player
+                else:
+                    send {@nomoney} to player
 
 on rightclick on stone button:
     
@@ -414,12 +425,12 @@ function noise(s: string, p: player):
         play sound {@n-die} with volume 1000 and pitch 2 at {_p}'s location for {_p}
     if {_s} is "win":
         loop {back.players::*}:
-            play sound {@n-win} with volume 1000 and pitch 1 at {back.players::%loop-index%}'s location for {back.players::%loop-index%}
+            play sound {@n-win} with volume 1000 and pitch 1 at loop-value's location for loop-value
     if {_s} is "join":
         play sound {@n-join} with volume 1000 and pitch 1 at {_p}'s location for {_p}
     if {_s} is "timer":
         loop {back.players::*}:
-            play sound {@n-timer} with volume 1000 and pitch 1 at {back.players::%loop-index%}'s location for {back.players::%loop-index%}
+            play sound {@n-timer} with volume 1000 and pitch 1 at loop-value's location for loop-value
     if {_s} is "leave":
         play sound {@n-leave} with volume 1000 and pitch 1 at {_p}'s location for {_p}
 
@@ -430,14 +441,6 @@ function naughty(p:player):
     if {back.karma::%{_p}%} <= 0:
         send {@kick} to {_p}
         leaveGame({_p})
-
-# function regenerate():
-#     if {back.reg.blocks::*} is set:
-#         loop {back.reg.blocks::*}:
-#             set block at location loop-index to loop-value
-#     else:
-#         broadcast {@noreg}
-
 
 command traitoradmin [<string>]:
     executable by: players
@@ -465,17 +468,7 @@ command traitoradmin [<string>]:
             send {@pos1}
         else if arg-1 = "pos2":
             set {back.reg.pos2} to player's location
-            send {@pos2}
-        # else if arg-1 = "saveRegion":
-        #     if {back.reg.pos1} is set:
-        #         if {back.reg.pos2} is set:
-        #             loop blocks between {back.reg.pos1} and {back.reg.pos2}:
-        #                 set {back.reg.blocks::%location of loop-block%} to loop-block
-        #             send {@region-saved}
-        #         else:
-        #             send {@nopos}
-        #     else:
-        #         send {@nopos}            
+            send {@pos2}         
 
         else:
             send {@cmdusage}
@@ -488,11 +481,7 @@ command setKarma [<player>] [<integer>]:
         set {back.karma::%arg-player%} to arg-2
         send "[&bbackstabber&f] &9sucessfully set &f%arg-player%'s &9karma to &f%arg-2%"
 
-# Inventory Locking
-on inventory click:
-    if {back.players::*} contains player:
-        cancel event
-
+# Inv locking
 on drop:
     if {back.players::*} contains player:
         cancel event
@@ -559,21 +548,6 @@ function openMenu(p:player):
         set {_w} to {back.tw::%loop-integer%}
         set slot {_i} of metadata tag "secretItems" of {_p} to {_w}
         open (metadata tag "secretItems" of {_p}) to {_p}
-            
-on inventory click:
-    if {back.traitors::*} contains player:
-        if event-inventory = (metadata tag "secretItems" of player):
-            cancel event
-            close player's inventory
-            if {back.money.%player%} > 0:
-                if slot 2 of player's inventory is air:
-                    set slot 2 of player's inventory to item
-                    subtract 1 from {back.money.%player%}
-                    updateBoard()
-                else:
-                    send {@2weapons} to player
-            else:
-                send {@nomoney} to player
 
 function loadChests():
     set {_chestLocs::*} to {back.chestLocs::*}
@@ -588,9 +562,6 @@ function loadChests():
         remove {_loc} from {back.chestLocs::*}
 
 # HALFBUG - if traitor leaves, game is pointless
-
-# TODO map regen
-# TODO tab list
 
 # TODO inform all on join
 
