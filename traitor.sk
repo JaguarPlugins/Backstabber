@@ -506,6 +506,14 @@ on swap hand items:
     if {back.players::*} contains player:
         cancel event
 
+on rightclick on fence gate:
+    if {back.players::*} contains player:
+        cancel event
+
+on rightclick on trapdoor:
+    if {back.players::*} contains player:
+        cancel event
+        
 # Chat
 on chat:
     
