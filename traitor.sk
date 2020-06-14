@@ -143,6 +143,7 @@ on rightclick on sign:
                         set slot 8 of player's inventory to a slime ball named "&cLeave"
 
                         clear scoreboard of player
+                        set the display name of tab of player for all players to "&r&7%player%"
                         updateBoard()
                         toggle scoreboard of player on
                         noise("join", player)
@@ -209,6 +210,7 @@ on death:
 
         noise("die", player)
         set player's gamemode to spectator
+        set the display name of tab of player for all players to "&r&f%player%"
         send player title {@death}
         remove player from {back.innocents::*}
         remove player from {back.traitors::*}
@@ -330,6 +332,7 @@ function leaveGame(p:player):
     set {back.%{_p}%.role} to "None"
     teleport {_p} to {back.%{_p}%.old-loc}
     send {@leave} to {_p}
+    set the display name of tab of {_p} for all players to "&r&f%{_p}%"
     if size of {back.players::*} < 2:
         # Game ends
         set {back.running} to false
