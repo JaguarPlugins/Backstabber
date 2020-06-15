@@ -25,7 +25,7 @@ options:
     newlocation: "[&bbackstabber&f] &9Location added"
     clearlocations: "[&bbackstabber&f] &9All locations removed"
     locationscomplete: "[&bbackstabber&f] &6All required locations added. You can stop now..."
-    cmdusage: "&b&loptions:&r &aaddLocation&r, &aclearLocations&r, &agetWeapons&r"
+    cmdusage: "&b&loptions:&r &aaddLocation&r, &aclearMapLocations&r, &aclearAllLocations&r, &agetWeapons&r"
     pos1: "[&bbackstabber&f] &9Position 1 set"
     pos2: "[&bbackstabber&f] &9Position 2 set"
     region-saved: "[&bbackstabber&f] &9Region generated and saved"
@@ -124,7 +124,8 @@ on rightclick on sign:
                 if {back.running} is not true:
                     if {back.players::*} does not contain player:
 
-                        joinGame(player)
+                        set {_world} to player's world
+                        joinGame(player, {_world})
 
                     else:
                         send {@already}
@@ -141,14 +142,16 @@ function joinLobby(p:player):
 
     send "DEBUG: YOU JOINED THE LOBBY" to {_p}
 
-function joinGame(p:player):
+function joinGame(p:player, w:world):
 
     add {_p} to {back.players::*}
     set {back.%{_p}%.role} to "None"
 
     set {back.%{_p}%.old-loc} to {_p}'s location
     set {_len} to size of {back.players::*}
-    teleport {_p} to {back.spawns::%{_len}%}
+
+    set {_loc} to {back.spawns::%{_w}%::%{_len}%}
+    teleport {_p} to {_loc}
 
     if {back.karma::%{_p}%} <= 50:
         apply potion of weakness of tier 1 without any particles to {_p} for 100000 seconds
@@ -466,26 +469,24 @@ command traitoradmin [<string>]:
     permission message: {@noperm}
     aliases: ttadmin
     trigger:
+        set {_w} to player's world
         if arg-1 = "addLocation":
-            add player's location to {back.spawns::*}
+            add player's location to {back.spawns::%{_w}%::*}
             send {@newlocation}
-            if size of {back.spawns::*} >= 8:
+            if size of {back.spawns::%{_w}%::*} >= 8:
                 send {@locationscomplete}
-        else if arg-1 = "clearLocations":
-            clear {back.spawns::*}
+        else if arg-1 = "clearMapLocations":
+            clear {back.spawns::%{_w}%::*}
             send {@clearlocations}
         else if arg-1 = "getWeapons":
             give player {back.weapons::*}
-            give player {back.ammo::*}
-        
+            give player {back.ammo::*}       
+        else if arg-1 = "listLocations":
+            send "&aLocations:"
+            send "%{back.spawns::%{_w}%::*}%"
+        else if arg-1 = "clearAllLocations":
+            clear {back.spawns::*}
 
-
-        else if arg-1 = "pos1":
-            set {back.reg.pos1} to player's location
-            send {@pos1}
-        else if arg-1 = "pos2":
-            set {back.reg.pos2} to player's location
-            send {@pos2}         
 
         else:
             send {@cmdusage}
