@@ -587,6 +587,15 @@ function loadChests():
         remove {_item} from {back.chestItems::*}
         remove {_loc} from {back.chestLocs::*}
 
+command backstabber-leave:
+    executable by: players
+    aliases: bleave
+    trigger:
+        if {back.players::*} contains player:
+            leaveGame(player)
+        else:
+            send "[&bbackstabber&f] &cYou are not playing"
+
 # HALFBUG - if traitor leaves, game is pointless
 
 # TODO inform all on join
