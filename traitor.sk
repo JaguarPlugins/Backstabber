@@ -380,22 +380,20 @@ on inventory click:
 
                         set {_item} to item
 
-                        set {_safeweapon} to {_item}
-                        set durability of {_safeweapon} to 0
-                        if {back.weapons::*} contains {_safeweapon}:
-                            close player's inventory
-                            remove item from event-inventory
-                            set {_olditem} to slot 0 of player's inventory
-                            if {_olditem} is not air:
-                                set slot 13 of event-inventory to {_olditem}
-                            set slot 0 of player's inventory to {_item}
-                        else if {back.ammo::*} contains item:
+                        if {back.ammo::*} contains item:
                             close player's inventory
                             remove item from event-inventory
                             set {_olditem} to slot 1 of player's inventory
                             if {_olditem} is not air:
                                 set slot 13 of event-inventory to {_olditem}
                             set slot 1 of player's inventory to {_item}
+                        else:
+                            close player's inventory
+                            remove item from event-inventory
+                            set {_olditem} to slot 0 of player's inventory
+                            if {_olditem} is not air:
+                                set slot 13 of event-inventory to {_olditem}
+                            set slot 0 of player's inventory to {_item}
         
         if {back.traitors::*} contains player:
             if event-inventory = (metadata tag "secretItems" of player):
