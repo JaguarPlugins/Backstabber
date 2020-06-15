@@ -124,46 +124,49 @@ on rightclick on sign:
                 if {back.running} is not true:
                     if {back.players::*} does not contain player:
 
-                        # Player joins
-                        add player to {back.players::*}
-                        set {back.%player%.role} to "None"
-
-                        set {back.%player%.old-loc} to player's location
-                        set {_len} to size of {back.players::*}
-                        teleport player to {back.spawns::%{_len}%}
-
-                        if {back.karma::%player%} <= 50:
-                            apply potion of weakness of tier 1 without any particles to player for 100000 seconds
-                            send {@lowkarma}
-
-                        set player's gamemode to survival
-                        apply potion of saturation of tier 2 without any particles to player for 100000 seconds
-                        heal player
-                        clear player's inventory
-                        set slot 8 of player's inventory to a slime ball named "&cLeave"
-
-                        clear scoreboard of player
-                        set the display name of tab of player for all players to "&r&7%player%"
-                        updateBoard()
-                        toggle scoreboard of player on
-                        noise("join", player)
-
-                        send {@join}
+                        joinGame(player)
 
                     else:
                         send {@already}
                 else:
-                    send {@running}
+                    
+                    joinLobby(player)
+
             else:
                 send {@full}
         else:
             send {@kick}
 
-    if 1st line of clicked block is "[test]":
-        loop {back.players::*}:
-            set {_player} to {back.players::%loop-index%}
-            teleport {_player} to {back.%{_player}%.old-loc}
+function joinLobby(p:player):
 
+    send "DEBUG: YOU JOINED THE LOBBY" to {_p}
+
+function joinGame(p:player):
+
+    add {_p} to {back.players::*}
+    set {back.%{_p}%.role} to "None"
+
+    set {back.%{_p}%.old-loc} to {_p}'s location
+    set {_len} to size of {back.players::*}
+    teleport {_p} to {back.spawns::%{_len}%}
+
+    if {back.karma::%{_p}%} <= 50:
+        apply potion of weakness of tier 1 without any particles to {_p} for 100000 seconds
+        send {@lowkarma} to {_p}
+
+    set {_p}'s gamemode to survival
+    apply potion of saturation of tier 2 without any particles to {_p} for 100000 seconds
+    heal {_p}
+    clear {_p}'s inventory
+    set slot 8 of {_p}'s inventory to a slime ball named "&cLeave"
+
+    clear scoreboard of {_p}
+    set the display name of tab of {_p} for all players to "&r&7%{_p}%"
+    updateBoard()
+    toggle scoreboard of {_p} on
+    noise("join", {_p})
+
+    send {@join} to {_p}
 
 # Leaving
 on rightclick holding slime ball:
