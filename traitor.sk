@@ -56,7 +56,6 @@ on load:
     clear {back.traitors::*}
     clear {back.innocents::*}
     clear {back.naughty::*}
-    clear {back.lobby::*}
 
     set {_bat} to a stick of knockback 2 and sharpness 1
     set name of {_bat} to "&bBat"
@@ -118,31 +117,36 @@ on load:
 on rightclick on sign:
     
     if 1st line of clicked block is "[backstabber]":
+
+        set 1st line of clicked block to "&f[&bbackstabber&f]"
+
+    if 1st line of clicked block is "&f[&bbackstabber&f]":
         
-        if {back.karma::%player%} is not set:
-            set {back.karma::%player%} to 100
-        if {back.karma::%player%} > 0:
-            if size of {back.players::*} < 8: 
-                if {back.running} is not true:
-                    if {back.players::*} does not contain player:
+        if line 2 of clicked block is set:
 
-                        noise("join", player)
-                        add player to {back.lobby::*}
-                        lobbyBoard()
-                        toggle scoreboard of player on
+            set {_world} to line 2 of clicked block parsed as world
 
-                        set slot 8 of player's inventory to a slime ball named "&cLeave"
+            if {back.karma::%player%} is not set:
+                set {back.karma::%player%} to 100
+            if {back.karma::%player%} > 0:
+                if size of {back.players::*} < 8: 
+                    if {back.running} is not true:
+                        if {back.players::*} does not contain player:
 
+                            joinGame(player, {_world})
+
+                        else:
+                            send {@already}
                     else:
-                        send {@already}
-                else:
-                    
-                    joinLobby(player)
+                        
+                        joinLobby(player)
 
+                else:
+                    send {@full}
             else:
-                send {@full}
+                send {@kick}
         else:
-            send {@kick}
+            broadcast "Sign setup incorrectly"
 
 function joinLobby(p:player):
 
@@ -173,32 +177,22 @@ function joinGame(p:player, w:world):
     set the display name of tab of {_p} for all players to "&r&7%{_p}%"
     updateBoard()
     toggle scoreboard of {_p} on
+    noise("map", {_p})
 
     send {@join} to {_p}
-
-function joinMap(w:world):
-
-    loop {back.lobby::*}:
-
-        set {_tempworld} to loop-value's world
-        joinGame(loop-value, {_tempworld})
-
-        noise("map", loop-value)
 
 # Leaving
 on rightclick holding slime ball:
     if {back.players::*} contains player:
         noise("leave", player)
         leaveGame(player)
-    if {back.lobby::*} contains player:
-        noise("leave", player)
-        leaveGame(player)
 
 every 20 ticks:
 
-    if {back.running} is false: 
+    if size of {back.players::*} > 1:
+        
+        if {back.running} is false:
 
-        if size of players > 1:
             if {back.timer} > 0:
                 subtract 1 from {back.timer}
                 updateBoard()
@@ -208,27 +202,16 @@ every 20 ticks:
                     
                 else if {back.timer} <= 3:
                     noise("timer", {back.players::*})
-        else:
-            if size of {back.lobby::*} > 1:
-                if {back.timer} > 0:
-                    subtract 1 from {back.timer}
-                    updateBoard()
-
-                    if {back.timer} < 1:
-                        joinMap({back.})
-                        
-                    else if {back.timer} <= 3:
-                        noise("timer", {back.players::*})
-
-    else if {back.running} is true:
         
-        if {back.timer} > 0:
-            subtract 1 from {back.timer}
-            lobbyBoard()
+        else if {back.running} is true:
+            
+            if {back.timer} > 0:
+                subtract 1 from {back.timer}
+                updateBoard()
 
-            if {back.timer} < 1:
-                {@victory-i}
-                endGame()
+                if {back.timer} < 1:
+                    {@victory-i}
+                    endGame()
 
 on death:
 
@@ -362,13 +345,10 @@ function leaveGame(p:player):
     remove {_p} from {back.players::*}
     remove {_p} from {back.innocents::*}
     remove {_p} from {back.traitors::*}
-    remove {_p} from {back.lobby::*}
     set {back.%{_p}%.role} to "None"
     teleport {_p} to {back.%{_p}%.old-loc}
     send {@leave} to {_p}
     set the display name of tab of {_p} for all players to "&r&f%{_p}%"
-    if size of {back.lobby::*} < 2:
-        set {back.timer} to 10
     if size of {back.players::*} < 2:
         # Game ends
         set {back.running} to false
@@ -400,21 +380,7 @@ function updateBoard():
         set line 6 of {_pl}'s scoreboard to "&7Karma:&r &l%{_k}%"
         if {back.traitors::*} contains {_pl}:
             set line 5 of {_pl}'s scoreboard to "&7Tokens:&r &l&d%{back.money.%{_pl}%}%"
-
-function lobbyBoard():
-
-    loop {back.lobby::*}:
-
-        set {_pl} to {back.lobby::%loop-index%}
-        set {_k} to {back.karma::%{_pl}%}
-
-        set title of {_pl}'s scoreboard to "&b&nBACKSTABBER"
-        set line 10 of {_pl}'s scoreboard to ""
-        set line 9 of {_pl}'s scoreboard to "&7Time:&r &l%{back.timer}% s"
-        set line 8 of {_pl}'s scoreboard to "&7Role:&r &l&aWAITING IN LOBBY"
-        set line 7 of {_pl}'s scoreboard to "&7In Lobby:&r &l%size of {back.lobby::*}%/8"
-        set line 6 of {_pl}'s scoreboard to "&7Karma:&r &l%{_k}%"
-
+        
 on inventory click:
     if {back.players::*} contains player:
         cancel event
@@ -499,7 +465,6 @@ function noise(s: string, p: player):
         play sound {@n-leave} with volume 1000 and pitch 1 at {_p}'s location for {_p}
     if {_s} is "map":
         play sound {@n-map} with volume 1000 and pitch 0 at {_p}'s location for {_p}
-
 
 function naughty(p:player):
     subtract 10 from {back.karma::%{_p}%}
