@@ -526,7 +526,8 @@ on rightclick on fence gate:
 
 on rightclick on trapdoor:
     if {back.players::*} contains player:
-        cancel event
+        if player's world is not "Back-Egyptian":
+            cancel event
         
 # Chat
 on chat:
