@@ -113,6 +113,10 @@ on load:
     set durability of {_trident} to 240
     add {_trident} to {back.tw::*}
 
+    set {_radar} to a nether star named "Light Shard"
+    set line 1 of lore of {_radar} to "Makes everyone glow"
+    add {_radar} to {back.tw::*}
+
 # Joining
 on rightclick on sign:
     
@@ -330,13 +334,14 @@ function debug():
     # broadcast "Players: %{back.players::*}% (%size of {back.players::*}%)"
     # broadcast "Innocents: %{back.innocents::*}% (%size of {back.innocents::*}%)"
     # broadcast "Traitors: %{back.traitors::*}% (%size of {back.traitors::*}%)"
-
+    
 function leaveGame(p:player):
 
     toggle scoreboard of {_p} off
     set action bar of {_p} to ""
     remove saturation from {_p}
     remove weakness from {_p}
+    remove glowing from {_p}
     extinguish {_p}
     heal {_p}
     clear {_p}'s inventory
@@ -582,6 +587,12 @@ on rightclick holding diamond:
             openMenu(player)
         else:
             send {@trapdeny}
+
+on rightclick holding nether star:
+    if {back.traitors::*} contains player:
+        cancel event
+        apply glowing to {back.players::*} for 20 seconds
+        remove item from player's inventory
 
 function openMenu(p:player):
     set {_len} to size of {back.tw::*}
