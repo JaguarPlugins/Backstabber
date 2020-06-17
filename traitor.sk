@@ -56,6 +56,7 @@ on load:
     clear {back.traitors::*}
     clear {back.innocents::*}
     clear {back.naughty::*}
+    clear {back.map-vote::*}
 
     set {_bat} to a stick of knockback 2 and sharpness 1
     set name of {_bat} to "&bBat"
@@ -590,6 +591,51 @@ function openMenu(p:player):
         set {_w} to {back.tw::%loop-integer%}
         set slot {_i} of metadata tag "secretItems" of {_p} to {_w}
         open (metadata tag "secretItems" of {_p}) to {_p}
+
+function voteMenu(p:player):
+    set metadata tag "vote" of {_p} to chest inventory with 3 rows named "Vote for map!"
+    set {_castle} to dark prismarine named "Castle" with lore "Back-Castle"
+    set {_pyramid} to sand named "Pyramid" with lore "Back-Egyptian"
+    set {_depot} to rail named "Depot" with lore "Back-Depot"
+    set slot 11 of metadata tag "vote" of {_p} to {_castle}
+    set slot 13 of metadata tag "vote" of {_p} to {_pyramid}
+    set slot 15 of metadata tag "vote" of {_p} to {_depot}
+    updateVote({_p})
+    open (metadata tag "vote" of {_p}) to {_p}
+    
+function updateVote(p:player):
+    set {_uu} to {_p}'s uuid
+    set {_choice} to {back.map-vote::%{_uu}%}
+    if {_choice} is set:
+        loop items in (metadata tag "vote" of {_p}):
+            set {_item} to loop-value
+            remove all enchantments from {_item}
+            set {_lore} to line 1 of lore of {_item}
+            if {_choice} = {_lore}:
+                set loop-value to shiny {_item}
+
+on inventory click:
+    if event-inventory = (metadata tag "vote" of player):
+        set {_map} to 1st line of lore of item
+        if {_map} is set:
+            cancel event
+            close player's inventory
+            set {_uu} to player's uuid
+            set {back.map-vote::%{_uu}%} to {_map}
+            send "[&bbackstabber&f] You voted for &a%name of item%"
+
+command backstabber-vote:
+    aliases: bvote
+    executable by: players
+    trigger:
+        voteMenu(player)
+
+command backstabber-voteinfo:
+    trigger:
+        loop {back.map-vote::*}:
+            set {_voter} to loop-index parsed as player
+            if {_voter} is online:
+                send "%{_voter}%: %loop-value%"
 
 function loadChests():
     set {_chestLocs::*} to {back.chestLocs::*}
