@@ -1,5 +1,5 @@
 options:
-    game-length: 300
+    game-length: 360
 
     join: "[&bbackstabber&f] &aYou joined the game"
     full: "[&bbackstabber&f] &cGame is full"
@@ -36,6 +36,7 @@ options:
     nomoney: "[&bbackstabber&f] &cYou don't have any tokens left"
     2weapons: "[&bbackstabber&f] &cYou already have a secret item equipped"
     trapdeny: "[&bbackstabber&f] &cYou are not a backstabber"
+    2compass: "[&bbackstabber&f] &cYou have already bought a tracker"
 
     n-join: "ui.button.click"
     n-leave: "ui.button.click"
@@ -113,8 +114,8 @@ on load:
     set durability of {_trident} to 240
     add {_trident} to {back.tw::*}
 
-    set {_radar} to a nether star named "Light Shard"
-    set line 1 of lore of {_radar} to "Makes everyone glow"
+    set {_radar} to a compass named "&9Tracker"
+    set line 1 of lore of {_radar} to "Directs you to the nearest innocent"
     add {_radar} to {back.tw::*}
 
 # Joining
@@ -341,7 +342,6 @@ function leaveGame(p:player):
     set action bar of {_p} to ""
     remove saturation from {_p}
     remove weakness from {_p}
-    remove glowing from {_p}
     extinguish {_p}
     heal {_p}
     clear {_p}'s inventory
@@ -420,12 +420,21 @@ on inventory click:
             if event-inventory = (metadata tag "secretItems" of player):
                 close player's inventory
                 if {back.money.%player%} > 0:
-                    if slot 2 of player's inventory is air:
-                        set slot 2 of player's inventory to item
-                        subtract 1 from {back.money.%player%}
-                        updateBoard()
+                    if item is a compass:
+                        if slot 3 of player's inventory is air:
+                            set slot 3 of player's inventory to item
+                            subtract 1 from {back.money.%player%}
+                            updateBoard()
+                            locate(player)
+                        else:
+                            send {@2compass} to player
                     else:
-                        send {@2weapons} to player
+                        if slot 2 of player's inventory is air:
+                            set slot 2 of player's inventory to item
+                            subtract 1 from {back.money.%player%}
+                            updateBoard()
+                        else:
+                            send {@2weapons} to player
                 else:
                     send {@nomoney} to player
 
@@ -588,12 +597,6 @@ on rightclick holding diamond:
         else:
             send {@trapdeny}
 
-on rightclick holding nether star:
-    if {back.traitors::*} contains player:
-        cancel event
-        apply glowing to {back.players::*} for 20 seconds
-        remove item from player's inventory
-
 function openMenu(p:player):
     set {_len} to size of {back.tw::*}
     set metadata tag "secretItems" of {_p} to chest inventory with 3 rows named "&nSecret Items"
@@ -603,6 +606,22 @@ function openMenu(p:player):
         set slot {_i} of metadata tag "secretItems" of {_p} to {_w}
         open (metadata tag "secretItems" of {_p}) to {_p}
 
+# Scanner
+function locate(p:player):
+    loop {back.innocents::*}:
+        if {_loc} is not set:
+            set {_loc} to loop-value's location
+        if (distance between {_p} and loop-value) < (distance between {_p} and {_loc}):
+            set {_loc} to loop-value's location
+    set action bar of {_p} to "&9-- SCANNING FOR NEARBY INNOCENTS --"
+    set compass target of {_p} to {_loc}
+
+every 10 seconds:
+    loop {back.traitors::*}:
+        if slot 3 of loop-value's inventory is a compass:
+            locate(loop-value)
+
+# Map reset
 function loadChests():
     set {_chestLocs::*} to {back.chestLocs::*}
     set {_chestItems::*} to {back.chestItems::*}
