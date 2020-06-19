@@ -64,6 +64,7 @@ on load:
     add "Back-Depot" to {back.maps::*}
     add "Back-Castle" to {back.maps::*}
     add "Back-Egyptian" to {back.maps::*}
+    add "Back-Old" to {back.maps::*}
     delete {back.map}
 
     set {_bat} to a stick of knockback 2 and sharpness 1
@@ -218,9 +219,9 @@ every 20 ticks:
 
                 if {back.timer} < 1:
                     {@victory-i}
-                    set {_win} to (50 * (size of {back.players::*}))
+                    set {_win} to (1 * (size of {back.players::*}))
                     add {_win} to balance of {back.innocents::*}
-                    send "[&bbackstabber&f] &aYou earned ₴%{_win}% for winning as innocent" to {back.innocents::*}
+                    send "[&bbackstabber&f] &aYou earned &f₴%{_win}%&a for camping, you boring poo. Are you happy now?" to {back.innocents::*}
                     endGame()
 
 on death:
@@ -624,9 +625,11 @@ function voteMenu(p:player):
     set {_castle} to dark prismarine named "Castle" with lore "Back-Castle"
     set {_pyramid} to sand named "Pyramid" with lore "Back-Egyptian"
     set {_depot} to rail named "Depot" with lore "Back-Depot"
-    set slot 11 of metadata tag "vote" of {_p} to {_castle}
-    set slot 13 of metadata tag "vote" of {_p} to {_pyramid}
-    set slot 15 of metadata tag "vote" of {_p} to {_depot}
+    set {_old} to cobweb named "Apocalypse" with lore "Back-Old"
+    set slot 10 of metadata tag "vote" of {_p} to {_castle}
+    set slot 12 of metadata tag "vote" of {_p} to {_pyramid}
+    set slot 14 of metadata tag "vote" of {_p} to {_depot}
+    set slot 16 of metadata tag "vote" of {_p} to {_old}
     updateVote({_p})
     open (metadata tag "vote" of {_p}) to {_p}
     
