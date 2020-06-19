@@ -63,7 +63,7 @@ on load:
     clear {back.maps::*}
     set {back.maps::Depot} to "Back-Depot"
     set {back.maps::Castle} to "Back-Castle"
-    set {back.maps::Egyptian} to "Back-Egyptian"
+    set {back.maps::Pyramid} to "Back-Egyptian"
     set {back.maps::Apocalypse} to "Back-Old"
     set {back.maps::Hogwarts} to "Back-Hog"
     delete {back.map}
@@ -631,7 +631,7 @@ function openMenu(p:player):
 function voteMenu(p:player):
     set metadata tag "vote" of {_p} to chest inventory with 3 rows named "Vote for map!"
     set {_castle} to dark prismarine named "&fCastle" with lore "&9by TomWoo & British8oys"
-    set {_pyramid} to sand named "&fPyramid" with lore "&9by 1THELEG1"
+    set {_pyramid} to sand named "&fPyramid" with lore "&9by GabrielMeanTime & 1THELEG1"
     set {_depot} to rail named "&fDepot" with lore "&9by GabrielMeanTime & Purple9"
     set {_old} to mossy stone bricks named "&fApocalypse" with lore "&9by TomWoo"
     set {_hog} to experience bottle named "&fHogwarts" with lore "&9by Kiki325"
@@ -649,18 +649,19 @@ function updateVote(p:player):
     if {_choice} is set:
         loop items in (metadata tag "vote" of {_p}):
             set {_item} to loop-value
+            set {_name} to name of {_item}
             remove all enchantments from {_item}
-            set {_lore} to line 1 of lore of {_item}
-            if {_choice} = {_lore}:
-                set {_name} to name of {_item}
-                set loop-value to shiny {_item} named "&b%{_name}%"
+            set {_worldname} to {back.maps::%{_name}%}
+            if {_choice} = {_worldname}:
+                set loop-value to shiny {_item}
+                set name of loop-value to "&b%{_name}%"
 
 on inventory click:
     if event-inventory = (metadata tag "vote" of player):
+        cancel event
+        close player's inventory
         set {_map} to {back.maps::%uncolored name of item%}
         if {_map} is set:
-            cancel event
-            close player's inventory
             set {_uu} to player's uuid
             set {back.map-vote::%{_uu}%} to {_map}
             send "[&bbackstabber&f] You voted for &a%name of item%"
