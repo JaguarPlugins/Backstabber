@@ -1,5 +1,5 @@
 options:
-    game-length: 300
+    game-length: 360
 
     join: "[&bbackstabber&f] &aYou joined the game"
     full: "[&bbackstabber&f] &cGame is full"
@@ -57,6 +57,12 @@ on load:
     clear {back.innocents::*}
     clear {back.naughty::*}
     clear {back.map-vote::*}
+
+    clear {back.maps::*}
+    add "Back-Depot" to {back.maps::*}
+    add "Back-Castle" to {back.maps::*}
+    add "Back-Egyptian" to {back.maps::*}
+    delete {back.map}
 
     set {_bat} to a stick of knockback 2 and sharpness 1
     set name of {_bat} to "&bBat"
@@ -122,32 +128,26 @@ on rightclick on sign:
         set 1st line of clicked block to "&f[&bbackstabber&f]"
 
     if 1st line of clicked block is "&f[&bbackstabber&f]":
-        
-        if line 2 of clicked block is set:
 
-            set {_world} to line 2 of clicked block parsed as world
+        if {back.karma::%player%} is not set:
+            set {back.karma::%player%} to 100
+        if {back.karma::%player%} > 0:
+            if size of {back.players::*} < 8: 
+                if {back.running} is not true:
+                    if {back.players::*} does not contain player:
 
-            if {back.karma::%player%} is not set:
-                set {back.karma::%player%} to 100
-            if {back.karma::%player%} > 0:
-                if size of {back.players::*} < 8: 
-                    if {back.running} is not true:
-                        if {back.players::*} does not contain player:
+                        if {back.map} is not set:
+                            set {back.map} to countVotes() parsed as world
+                        joinGame(player, {back.map})
 
-                            joinGame(player, {_world})
-
-                        else:
-                            send {@already}
                     else:
-                        
-                        joinLobby(player)
-
+                        send {@already}
                 else:
-                    send {@full}
+                    send {@running}
             else:
-                send {@kick}
+                send {@full}
         else:
-            broadcast "Sign setup incorrectly"
+            send {@kick}
 
 function joinLobby(p:player):
 
@@ -280,6 +280,7 @@ function endGame():
                 set {back.karma::%{_player}%} to 100
         leaveGame({_player})
     loadChests()
+    delete {back.map}
 
 function startGame():
     
@@ -350,6 +351,15 @@ function leaveGame(p:player):
     teleport {_p} to {back.%{_p}%.old-loc}
     send {@leave} to {_p}
     set the display name of tab of {_p} for all players to "&r&f%{_p}%"
+    if {back.running} is true:
+        if (size of {back.traitors::*}) <= 0:
+            send {@cancel} to {back.players::*}
+            endGame()
+            remove 5 from {back.karma::%{_p}%}
+        if (size of {back.innocents::*}) <= 0:
+            send {@cancel} to {back.players::*}
+            endGame()
+            remove 5 from {back.karma::%{_p}%}
     if size of {back.players::*} < 2:
         # Game ends
         set {back.running} to false
@@ -358,13 +368,8 @@ function leaveGame(p:player):
             set {back.%loop-value%.role} to "None"
         if size of {back.players::*} < 1:
             loadChests()
-    if {back.running} is true:
-        if (size of {back.traitors::*}) is 0:
-            send {@cancel} to {back.players::*}
-            endGame()
-        if (size of {back.innocents::*}) is 0:
-            send {@cancel} to {back.players::*}
-            endGame()
+            delete {back.map}
+    
 
 function updateBoard():
 
@@ -592,6 +597,7 @@ function openMenu(p:player):
         set slot {_i} of metadata tag "secretItems" of {_p} to {_w}
         open (metadata tag "secretItems" of {_p}) to {_p}
 
+#Voting
 function voteMenu(p:player):
     set metadata tag "vote" of {_p} to chest inventory with 3 rows named "Vote for map!"
     set {_castle} to dark prismarine named "Castle" with lore "Back-Castle"
@@ -631,12 +637,39 @@ command backstabber-vote:
         voteMenu(player)
 
 command backstabber-voteinfo:
+    aliases: vi
     trigger:
         loop {back.map-vote::*}:
             set {_voter} to loop-index parsed as player
             if {_voter} is online:
                 send "%{_voter}%: %loop-value%"
 
+function countVotes() :: string:
+    if {back.map-vote::*} is not set:
+        set {_ind} to a random integer between 1 and (size of {back.maps::*})
+        return {back.maps::%{_ind}%}
+    loop {back.map-vote::*}:
+        set {_voter} to loop-index parsed as player
+        if {_voter} is online:
+            add 1 to {_vote::%loop-value%}
+    loop {_vote::*}:
+        if loop-value > {_h-vote}:
+            clear {_h-map::*}
+            set {_h-vote} to loop-value
+        if loop-value = {_h-vote}:
+            add loop-index to {_h-map::*}
+        if {_h-vote} is not set:
+            set {_h-vote} to loop-value
+            add loop-index to {_h-map::*}
+    set {_i} to a random integer between 1 and (size of {_h-map::*})
+    return {_h-map::%{_i}%}
+
+on quit:
+    set {_uu} to player's uuid
+    delete {back.map-vote::%{_uu}%}
+
+
+# Map reset
 function loadChests():
     set {_chestLocs::*} to {back.chestLocs::*}
     set {_chestItems::*} to {back.chestItems::*}
