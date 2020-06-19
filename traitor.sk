@@ -218,6 +218,9 @@ every 20 ticks:
 
                 if {back.timer} < 1:
                     {@victory-i}
+                    set {_win} to (50 * (size of {back.players::*}))
+                    add {_win} to balance of {back.innocents::*}
+                    send "[&bbackstabber&f] &aYou earned ₴%{_win}% for winning as innocent" to {back.innocents::*}
                     endGame()
 
 on death:
@@ -655,7 +658,8 @@ command backstabber-vote:
         voteMenu(player)
 
 command backstabber-voteinfo:
-    aliases: vi
+    permission: traitor.info
+    aliases: bvi
     trigger:
         loop {back.map-vote::*}:
             set {_voter} to loop-index parsed as player
