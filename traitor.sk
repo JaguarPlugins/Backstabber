@@ -65,6 +65,7 @@ on load:
     add "Back-Castle" to {back.maps::*}
     add "Back-Egyptian" to {back.maps::*}
     add "Back-Old" to {back.maps::*}
+    add "Back-Hog" to {back.maps::*}
     delete {back.map}
 
     set {_bat} to a stick of knockback 2 and sharpness 1
@@ -622,14 +623,16 @@ function openMenu(p:player):
 #Voting
 function voteMenu(p:player):
     set metadata tag "vote" of {_p} to chest inventory with 3 rows named "Vote for map!"
-    set {_castle} to dark prismarine named "Castle" with lore "Back-Castle"
-    set {_pyramid} to sand named "Pyramid" with lore "Back-Egyptian"
-    set {_depot} to rail named "Depot" with lore "Back-Depot"
-    set {_old} to cobweb named "Apocalypse" with lore "Back-Old"
-    set slot 10 of metadata tag "vote" of {_p} to {_castle}
+    set {_castle} to dark prismarine named "&fCastle" with lore "Back-Castle"
+    set {_pyramid} to sand named "&fPyramid" with lore "Back-Egyptian"
+    set {_depot} to rail named "&fDepot" with lore "Back-Depot"
+    set {_old} to mossy stone bricks named "&fApocalypse" with lore "Back-Old"
+    set {_hog} to experience bottle named "&fHogwarts" with lore "Back-Hog"
+    set slot 11 of metadata tag "vote" of {_p} to {_castle}
     set slot 12 of metadata tag "vote" of {_p} to {_pyramid}
-    set slot 14 of metadata tag "vote" of {_p} to {_depot}
-    set slot 16 of metadata tag "vote" of {_p} to {_old}
+    set slot 13 of metadata tag "vote" of {_p} to {_depot}
+    set slot 14 of metadata tag "vote" of {_p} to {_old}
+    set slot 15 of metadata tag "vote" of {_p} to {_hog}
     updateVote({_p})
     open (metadata tag "vote" of {_p}) to {_p}
     
@@ -642,7 +645,8 @@ function updateVote(p:player):
             remove all enchantments from {_item}
             set {_lore} to line 1 of lore of {_item}
             if {_choice} = {_lore}:
-                set loop-value to shiny {_item}
+                set {_name} to name of {_item}
+                set loop-value to shiny {_item} named "&b%{_name}%"
 
 on inventory click:
     if event-inventory = (metadata tag "vote" of player):
