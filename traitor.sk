@@ -68,6 +68,13 @@ on load:
     add "Back-Hog" to {back.maps::*}
     delete {back.map}
 
+    clear {back.time::*}
+    set {back.time::"Back-Depot"} to 360 
+    set {back.time::"Back-Castle"} to 360
+    set {back.time::"Back-Egyptian"} to 360
+    set {back.time::"Back-Old"} to 360
+    set {back.time::"Back-Hog"} to 480   
+
     set {_bat} to a stick of knockback 2 and sharpness 1
     set name of {_bat} to "&bBat"
     add {_bat} to {back.weapons::*}
@@ -299,7 +306,7 @@ function startGame():
     clear {back.innocents::*}
     clear {back.naughty::*}
     set {back.running} to true
-    set {back.timer} to {@game-length}
+    set {back.timer} to {back.time::%{back.map}%}
     loop {back.players::*}:
         set {_i} to {back.players::%loop-index%}
         set {back.%{_i}%.role} to "&aInnocent"
