@@ -36,6 +36,7 @@ options:
     nomoney: "[&bbackstabber&f] &cYou don't have any tokens left"
     2weapons: "[&bbackstabber&f] &cYou already have a secret item equipped"
     trapdeny: "[&bbackstabber&f] &cYou are not a backstabber"
+    2compass: "[&bbackstabber&f] &cYou have already bought a tracker"
 
     n-join: "ui.button.click"
     n-leave: "ui.button.click"
@@ -46,6 +47,7 @@ options:
     n-win: "ui.toast.challenge_complete"
     n-timer: "block.note_block.pling"
     n-map: "entity.arrow.hit_player"
+    n-scan: "block.beacon.ambient"
  
 on load:
     clear {back.weapons::*}
@@ -107,7 +109,7 @@ on load:
     set {_arrow} to an arrow
     add {_arrow} to {back.ammo::*}
 
-    set {_knife} to a diamond sword of sharpness 100
+    set {_knife} to a diamond sword of sharpness 5
     set line 1 of lore of {_knife} to "1x use"
     set line 2 of lore of {_knife} to "Instant kill"
     set durability of {_knife} to 1560
@@ -119,6 +121,10 @@ on load:
     set line 1 of lore of {_trident} to "Limited use"
     set durability of {_trident} to 240
     add {_trident} to {back.tw::*}
+
+    set {_radar} to a compass named "&9Tracker"
+    set line 1 of lore of {_radar} to "Directs you to the nearest innocent"
+    add {_radar} to {back.tw::*}
 
 # Joining
 on rightclick on sign:
@@ -332,7 +338,7 @@ function debug():
     # broadcast "Players: %{back.players::*}% (%size of {back.players::*}%)"
     # broadcast "Innocents: %{back.innocents::*}% (%size of {back.innocents::*}%)"
     # broadcast "Traitors: %{back.traitors::*}% (%size of {back.traitors::*}%)"
-
+    
 function leaveGame(p:player):
 
     toggle scoreboard of {_p} off
@@ -421,12 +427,21 @@ on inventory click:
             if event-inventory = (metadata tag "secretItems" of player):
                 close player's inventory
                 if {back.money.%player%} > 0:
-                    if slot 2 of player's inventory is air:
-                        set slot 2 of player's inventory to item
-                        subtract 1 from {back.money.%player%}
-                        updateBoard()
+                    if item is a compass:
+                        if slot 3 of player's inventory is air:
+                            set slot 3 of player's inventory to item
+                            subtract 1 from {back.money.%player%}
+                            updateBoard()
+                            locate(player)
+                        else:
+                            send {@2compass} to player
                     else:
-                        send {@2weapons} to player
+                        if slot 2 of player's inventory is air:
+                            set slot 2 of player's inventory to item
+                            subtract 1 from {back.money.%player%}
+                            updateBoard()
+                        else:
+                            send {@2weapons} to player
                 else:
                     send {@nomoney} to player
 
@@ -471,6 +486,8 @@ function noise(s: string, p: player):
         play sound {@n-leave} with volume 1000 and pitch 1 at {_p}'s location for {_p}
     if {_s} is "map":
         play sound {@n-map} with volume 1000 and pitch 0 at {_p}'s location for {_p}
+    if {_s} is "scan":
+        play sound {@n-scan} with volume 1000 and pitch 1 at {_p}'s location for {_p}
 
 function naughty(p:player):
     subtract 10 from {back.karma::%{_p}%}
@@ -532,7 +549,8 @@ on rightclick on fence gate:
 
 on rightclick on trapdoor:
     if {back.players::*} contains player:
-        cancel event
+        if player's world is not "Back-Egyptian":
+            cancel event
         
 # Chat
 on chat:
@@ -668,6 +686,26 @@ on quit:
     set {_uu} to player's uuid
     delete {back.map-vote::%{_uu}%}
 
+# Scanner
+function locate(p:player):
+    loop {back.innocents::*}:
+        if {_loc} is not set:
+            set {_loc} to loop-value's location
+        if (distance between {_p} and loop-value) < (distance between {_p} and {_loc}):
+            set {_loc} to loop-value's location
+    set action bar of {_p} to "&9-- SCANNING FOR NEARBY INNOCENTS --"
+    noise("scan", {_p})
+    set compass target of {_p} to {_loc}
+
+every 10 seconds:
+    loop {back.traitors::*}:
+        if slot 3 of loop-value's inventory is a compass:
+            locate(loop-value)
+
+on damage:
+    if {back.traitors::*} contains attacker:
+        if attacker's tool is a diamond sword:
+            kill victim
 
 # Map reset
 function loadChests():
@@ -681,6 +719,15 @@ function loadChests():
         set slot 13 of {_block}'s inventory to {_item}
         remove {_item} from {back.chestItems::*}
         remove {_loc} from {back.chestLocs::*}
+
+command backstabber-leave:
+    executable by: players
+    aliases: bleave
+    trigger:
+        if {back.players::*} contains player:
+            leaveGame(player)
+        else:
+            send "[&bbackstabber&f] &cYou are not playing"
 
 # HALFBUG - if traitor leaves, game is pointless
 
