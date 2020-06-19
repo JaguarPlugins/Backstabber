@@ -629,17 +629,19 @@ function openMenu(p:player):
 
 #Voting
 function voteMenu(p:player):
-    set metadata tag "vote" of {_p} to chest inventory with 3 rows named "Vote for map!"
+    set metadata tag "vote" of {_p} to chest inventory with 5 rows named "Vote for map!"
     set {_castle} to dark prismarine named "&fCastle" with lore "&9by TomWoo & British8oys"
     set {_pyramid} to sand named "&fPyramid" with lore "&9by GabrielMeanTime & 1THELEG1"
     set {_depot} to rail named "&fDepot" with lore "&9by GabrielMeanTime & Purple9"
     set {_old} to mossy stone bricks named "&fApocalypse" with lore "&9by TomWoo"
     set {_hog} to experience bottle named "&fHogwarts" with lore "&9by Kiki325"
+    set {_none} to red concrete named "&cNone"
     set slot 11 of metadata tag "vote" of {_p} to {_castle}
     set slot 12 of metadata tag "vote" of {_p} to {_pyramid}
     set slot 13 of metadata tag "vote" of {_p} to {_depot}
     set slot 14 of metadata tag "vote" of {_p} to {_old}
     set slot 15 of metadata tag "vote" of {_p} to {_hog}
+    set slot 31 of metadata tag "vote" of {_p} to {_none}
     updateVote({_p})
     open (metadata tag "vote" of {_p}) to {_p}
     
@@ -659,12 +661,16 @@ function updateVote(p:player):
 on inventory click:
     if event-inventory = (metadata tag "vote" of player):
         cancel event
-        close player's inventory
         set {_map} to {back.maps::%uncolored name of item%}
+        set {_uu} to player's uuid
         if {_map} is set:
-            set {_uu} to player's uuid
+            close player's inventory
             set {back.map-vote::%{_uu}%} to {_map}
             send "[&bbackstabber&f] You voted for &a%name of item%"
+        if item is red concrete:
+            close player's inventory
+            delete {back.map-vote::%{_uu}%}
+            send "[&bbackstabber&f] Your vote was &cremoved"
 
 command backstabber-vote:
     aliases: bvote
