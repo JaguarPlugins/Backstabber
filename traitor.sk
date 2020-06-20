@@ -54,6 +54,7 @@ on load:
     clear {back.ammo::*}
     clear {back.tw::*}
     set {back.running} to false
+    set {back.endgame} to false
     clear {back.players::*}
     clear {back.traitors::*}
     clear {back.innocents::*}
@@ -249,23 +250,26 @@ on death:
         send player title {@death}
         remove player from {back.innocents::*}
         remove player from {back.traitors::*}
-        wait 1 second
-        if size of {back.traitors::*} < 1:
-            {@victory-i}
-            set {_win} to (50 * (size of {back.players::*}))
-            add {_win} to balance of {back.innocents::*}
-            send "[&bbackstabber&f] &aYou earned ₴%{_win}% for winning as innocent" to {back.innocents::*}
-            noise("win", {back.players::*})
-            wait 4 seconds
-            endGame()
-        else if size of {back.innocents::*} < 1:
-            {@victory-t}
-            set {_win} to (100 * (size of {back.players::*}))
-            add {_win} to balance of {back.traitors::*}
-            send "[&bbackstabber&f] &aYou earned ₴%{_win}% for winning as traitor" to {back.traitors::*}
-            noise("win", {back.players::*})
-            wait 4 seconds
-            endGame() 
+        if {back.endgame} is not true:
+            wait 1 second
+            if size of {back.traitors::*} < 1:
+                set {back.endgame} to true
+                {@victory-i}
+                set {_win} to (50 * (size of {back.players::*}))
+                add {_win} to balance of {back.innocents::*}
+                send "[&bbackstabber&f] &aYou earned ₴%{_win}% for winning as innocent" to {back.innocents::*}
+                noise("win", {back.players::*})
+                wait 4 seconds
+                endGame()
+            else if size of {back.innocents::*} < 1:
+                set {back.endgame} to true
+                {@victory-t}
+                set {_win} to (100 * (size of {back.players::*}))
+                add {_win} to balance of {back.traitors::*}
+                send "[&bbackstabber&f] &aYou earned ₴%{_win}% for winning as traitor" to {back.traitors::*}
+                noise("win", {back.players::*})
+                wait 4 seconds
+                endGame() 
 
 on damage:
 
@@ -288,6 +292,7 @@ on quit:
 function endGame():
     
     set {back.running} to false
+    set {back.endgame} to false
     set {_loop::*} to {back.players::*}
     loop {_loop::*}:
         set {_player} to {_loop::%loop-index%}
