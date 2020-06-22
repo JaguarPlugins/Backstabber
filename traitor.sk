@@ -48,7 +48,8 @@ options:
     n-timer: "block.note_block.pling"
     n-map: "entity.arrow.hit_player"
     n-scan: "block.beacon.ambient"
- 
+    n-beep: "block.note_block.pling"
+
 on load:
     clear {back.weapons::*}
     clear {back.ammo::*}
@@ -131,6 +132,11 @@ on load:
     set line 1 of lore of {_trident} to "Limited use"
     set durability of {_trident} to 240
     add {_trident} to {back.tw::*}
+
+    set {_boomer} to blaze powder
+    set name of {_boomer} to "&dBoomer"
+    set line 1 of lore of {_boomer} to "Creates an explosion at your location"
+    add {_boomer} to {back.tw::*}
 
     set {_radar} to a compass named "&9Tracker"
     set line 1 of lore of {_radar} to "Directs you to the nearest innocent"
@@ -759,6 +765,48 @@ command backstabber-leave:
             leaveGame(player)
         else:
             send "[&bbackstabber&f] &cYou are not playing"
+
+on rightclick holding blaze powder:
+    if {back.traitors::*} contains player:
+        set {_loc} to player's location
+        remove item from player's inventory
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
+        wait 2 ticks
+        create a safe explosion of force 11 at {_loc}
 
 # HALFBUG - if traitor leaves, game is pointless
 
