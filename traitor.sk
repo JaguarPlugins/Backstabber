@@ -135,7 +135,8 @@ on load:
 
     set {_boomer} to blaze powder
     set name of {_boomer} to "&dBoomer"
-    set line 1 of lore of {_boomer} to "Creates an explosion at your location"
+    set line 1 of lore of {_boomer} to "Creates an explosion"
+    set line 2 of lore of {_boomer} to "1 second after detonation"
     add {_boomer} to {back.tw::*}
 
     set {_radar} to a compass named "&9Tracker"
@@ -790,23 +791,7 @@ on rightclick holding blaze powder:
         wait 2 ticks
         play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
         wait 2 ticks
-        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
-        wait 2 ticks
-        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
-        wait 2 ticks
-        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
-        wait 2 ticks
-        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
-        wait 2 ticks
-        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
-        wait 2 ticks
-        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
-        wait 2 ticks
-        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
-        wait 2 ticks
-        play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
-        wait 2 ticks
-        create a safe explosion of force 11 at {_loc}
+        create a safe explosion of force 20 at {_loc}
 
 # HALFBUG - if traitor leaves, game is pointless
 
