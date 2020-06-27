@@ -9,7 +9,7 @@ options:
     trapdeny: "[&bbackstabber&f] &cYou are not a backstabber"
     kick: "[&bbackstabber&f] &cYour karma is too low!"
     rdm: "&c-10 Karma for RDM. If it gets too low, you will be banned!"
-    lowkarma: "[&bbackstabber&f] &cYou have been weakened due to low karma"
+    lowkarma: "[&bbackstabber&f] &cYou have been weakened due to low karma. Inferno swords and your hand will not do any damage"
     dead: send "[&bbackstabber&f] &cYou can't talk when you're dead!"
     fool: send "[&bbackstabber&f] &aYou fooled them!"
 
@@ -316,7 +316,7 @@ function endGame():
             add 1 to {back.stats.wins.%loop-value%}
         if {back.traitors::*} contains {_player}:
             add 1 to {back.stats.wins.%loop-value%}
-        add 1 {back.stats.games.%loop-value%}
+        add 1 to {back.stats.games.%loop-value%}
         if {back.naughty::*} does not contain {_player}:
             if {back.karma::%{_player}%} < 99:
                 add 2 to {back.karma::%{_player}%}
