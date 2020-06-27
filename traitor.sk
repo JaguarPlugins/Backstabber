@@ -237,7 +237,9 @@ every 20 ticks:
                     {@victory-i}
                     set {_win} to (1 * (size of {back.players::*}))
                     add {_win} to balance of {back.innocents::*}
-                    send "[&bbackstabber&f] &aYou earned &f₴%{_win}%&a for camping, you boring poo. Are you happy now?" to {back.innocents::*}
+                    send "[&bbackstabber&f] &aYou only earned &f₴%{_win}%&a as you failed to identify the backstabber(s)" to {back.innocents::*}
+                    loop {back.innocents::*}:
+                        add {_win} to {back.stats.wins.%loop-value%}
                     endGame()
 
 on death:
@@ -245,6 +247,9 @@ on death:
     if {back.players::*} contains player:
         
         cancel event
+
+        add 1 to {back.stats.deaths.%player%}
+        add 1 to {back.stats.kills.%attacker%}
 
         if {back.innocents::*} contains attacker:
             if {back.naughty::*} does not contain player:
@@ -265,6 +270,8 @@ on death:
                 set {_win} to (50 * (size of {back.players::*}))
                 add {_win} to balance of {back.innocents::*}
                 send "[&bbackstabber&f] &aYou earned ₴%{_win}% for winning as innocent" to {back.innocents::*}
+                loop {back.innocents::*}:
+                    add {_win} to {back.stats.wins.%loop-value%}
                 noise("win", {back.players::*})
                 wait 4 seconds
                 endGame()
@@ -274,6 +281,8 @@ on death:
                 set {_win} to (100 * (size of {back.players::*}))
                 add {_win} to balance of {back.traitors::*}
                 send "[&bbackstabber&f] &aYou earned ₴%{_win}% for winning as traitor" to {back.traitors::*}
+                loop {back.traitors::*}:
+                    add {_win} to {back.stats.wins.%loop-value%}
                 noise("win", {back.players::*})
                 wait 4 seconds
                 endGame() 
@@ -303,6 +312,11 @@ function endGame():
     set {_loop::*} to {back.players::*}
     loop {_loop::*}:
         set {_player} to {_loop::%loop-index%}
+        if {back.innocents::*} contains {_player}:
+            add 1 to {back.stats.wins.%loop-value%}
+        if {back.traitors::*} contains {_player}:
+            add 1 to {back.stats.wins.%loop-value%}
+        add 1 {back.stats.games.%loop-value%}
         if {back.naughty::*} does not contain {_player}:
             if {back.karma::%{_player}%} < 99:
                 add 2 to {back.karma::%{_player}%}
@@ -769,7 +783,7 @@ command backstabber-leave:
 
 on rightclick holding blaze powder:
     if {back.traitors::*} contains player:
-        set {_loc} to player's location
+        set {_loc} to player's target block
         remove item from player's inventory
         play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
         wait 2 ticks
@@ -792,6 +806,16 @@ on rightclick holding blaze powder:
         play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
         wait 2 ticks
         create a safe explosion of force 20 at {_loc}
+
+command backstabber-stats:
+    executable by: players
+    aliases: bstats
+    trigger:
+        send "&l&nBackstabber Statistics:"
+        send "&lWins: &r&a%{back.stats.wins.%player%}%"
+        send "&lKills: &r&a%{back.stats.kills.%player%}%"
+        send "&lDeaths: &r&a%{back.stats.deaths.%player%}%"
+        send "&lGames Played: &r&a%{back.stats.games.%player%}%"
 
 # HALFBUG - if traitor leaves, game is pointless
 
