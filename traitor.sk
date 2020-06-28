@@ -802,7 +802,6 @@ on rightclick holding blaze powder:
     if {back.traitors::*} contains player:
         set {_bl} to location of player's target block
         set {_loc} to location 1 above {_bl}
-        broadcast "%{_loc}%"
         remove item from player's inventory
         play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
         wait 2 ticks
@@ -824,7 +823,7 @@ on rightclick holding blaze powder:
         wait 2 ticks
         play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
         wait 2 ticks
-        create a safe explosion of force 15 at {_loc}
+        create a safe explosion of force 11 at {_loc}
 
 command backstabber-stats:
     executable by: players
