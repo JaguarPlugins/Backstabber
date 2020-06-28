@@ -75,7 +75,7 @@ on load:
     set {back.time::Back-Egyptian} to 360
     set {back.time::Back-Old} to 360
     set {back.time::Back-Hog} to 480   
-    set {back.time::Back-Vallye} to 360
+    set {back.time::Back-Valley} to 360
 
     set {_bat} to a stick of knockback 2 and sharpness 1
     set name of {_bat} to "&bBat"
@@ -261,21 +261,16 @@ on death:
         set the display name of tab of player for all players to "&r&f%player%"
         send player title {@death}
         remove player from {back.innocents::*}
+
+        if {back.traitors::*} contains player:
+            if damage cause is a block explosion:
+                if size of {back.traitors::*} < 2:
+                    stop
         remove player from {back.traitors::*}
+
         if {back.endgame} is not true:
             wait 1 second
-            if size of {back.traitors::*} < 1:
-                set {back.endgame} to true
-                {@victory-i}
-                set {_win} to (50 * (size of {back.players::*}))
-                add {_win} to balance of {back.innocents::*}
-                send "[&bbackstabber&f] &aYou earned ₴%{_win}% for winning as innocent" to {back.innocents::*}
-                loop {back.innocents::*}:
-                    add {_win} to {back.stats.money.%loop-value%}
-                noise("win", {back.players::*})
-                wait 4 seconds
-                endGame()
-            else if size of {back.innocents::*} < 1:
+            if size of {back.innocents::*} < 1:
                 set {back.endgame} to true
                 {@victory-t}
                 set {_win} to (100 * (size of {back.players::*}))
@@ -286,6 +281,17 @@ on death:
                 noise("win", {back.players::*})
                 wait 4 seconds
                 endGame() 
+            else if size of {back.traitors::*} < 1:
+                set {back.endgame} to true
+                {@victory-i}
+                set {_win} to (50 * (size of {back.players::*}))
+                add {_win} to balance of {back.innocents::*}
+                send "[&bbackstabber&f] &aYou earned ₴%{_win}% for winning as innocent" to {back.innocents::*}
+                loop {back.innocents::*}:
+                    add {_win} to {back.stats.money.%loop-value%}
+                noise("win", {back.players::*})
+                wait 4 seconds
+                endGame()
 
 on damage:
 
@@ -655,21 +661,21 @@ function openMenu(p:player):
 
 #Voting
 function voteMenu(p:player):
-    set metadata tag "vote" of {_p} to chest inventory with 5 rows named "Vote for map!"
+    set metadata tag "vote" of {_p} to chest inventory with 6 rows named "Vote for map!"
     set {_castle} to dark prismarine named "&fCastle" with lore "&9by TomWoo & British8oys"
     set {_pyramid} to sand named "&fPyramid" with lore "&9by GabrielMeanTime & 1THELEG1"
     set {_depot} to rail named "&fDepot" with lore "&9by GabrielMeanTime & Purple9"
     set {_old} to mossy stone bricks named "&fApocalypse" with lore "&9by TomWoo"
-    set {_hog} to experience bottle named "&fHogwarts" with lore "&9by Kiki325"
+    set {_hog} to brewing stand named "&fHogwarts" with lore "&9by Kiki325"
     set {_valley} to grass named "&fValley" with lore "&9by Kiki325"
     set {_none} to red concrete named "&cNone"
-    set slot 11 of metadata tag "vote" of {_p} to {_castle}
-    set slot 12 of metadata tag "vote" of {_p} to {_pyramid}
-    set slot 13 of metadata tag "vote" of {_p} to {_depot}
-    set slot 14 of metadata tag "vote" of {_p} to {_old}
-    set slot 15 of metadata tag "vote" of {_p} to {_hog}
-    set slot 17 of metadata tag "vote" of {_p} to {_valley}
-    set slot 31 of metadata tag "vote" of {_p} to {_none}
+    set slot 12 of metadata tag "vote" of {_p} to {_castle}
+    set slot 13 of metadata tag "vote" of {_p} to {_pyramid}
+    set slot 14 of metadata tag "vote" of {_p} to {_depot}
+    set slot 21 of metadata tag "vote" of {_p} to {_old}
+    set slot 22 of metadata tag "vote" of {_p} to {_hog}
+    set slot 23 of metadata tag "vote" of {_p} to {_valley}
+    set slot 40 of metadata tag "vote" of {_p} to {_none}
     updateVote({_p})
     open (metadata tag "vote" of {_p}) to {_p}
     
@@ -759,7 +765,9 @@ every 10 seconds:
 on damage:
     if {back.traitors::*} contains attacker:
         if attacker's tool is a diamond sword:
+            cancel event
             kill victim
+            add 1 to {back.stats.kills.%attacker%}
 
 # Map reset
 function loadChests():
@@ -785,7 +793,9 @@ command backstabber-leave:
 
 on rightclick holding blaze powder:
     if {back.traitors::*} contains player:
-        set {_loc} to player's target block
+        set {_bl} to location of player's target block
+        set {_loc} to location 1 above {_bl}
+        broadcast "%{_loc}%"
         remove item from player's inventory
         play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
         wait 2 ticks
@@ -807,7 +817,7 @@ on rightclick holding blaze powder:
         wait 2 ticks
         play sound {@n-beep} with volume 1 and pitch 2 at {_loc} for {back.players::*}
         wait 2 ticks
-        create a safe explosion of force 20 at {_loc}
+        create a safe explosion of force 15 at {_loc}
 
 command backstabber-stats:
     executable by: players
@@ -820,17 +830,19 @@ command backstabber-stats:
         send "Wins: &r&a%{back.stats.wins.%player%}%"
         send "Kills: &r&a%{back.stats.kills.%player%}%"
         send "Deaths: &r&a%{back.stats.deaths.%player%}%"
-        send "Money earnt: &r&a%{back.stats.money.%player%}%"
+        if {back.stats.money.%player%} is not set:
+            set {back.stats.money.%player%} to 0
+        send "Money earnt: &r&a₴%{back.stats.money.%player%}%"
         send ""
 
 command backstabber-resetstats [<player>]:
     executable by: players
     permission: traitor.statadmin
     trigger:
-        set {back.stats.games.%arg-player%} to 0
-        set {back.stats.wins.%arg-player%} to 0
-        set {back.stats.kills.%arg-player%} to 0
-        set {back.stats.deaths.%arg-player%} to 0
+        delete {back.stats.games.%arg-player%}
+        delete {back.stats.wins.%arg-player%}
+        delete {back.stats.kills.%arg-player%}
+        delete {back.stats.deaths.%arg-player%}
         set {back.stats.money.%arg-player%} to 0
         send "Reset %arg-player%'s stats"
 
