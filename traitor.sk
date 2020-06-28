@@ -120,7 +120,7 @@ on load:
     set {_arrow} to an arrow
     add {_arrow} to {back.ammo::*}
 
-    set {_knife} to a diamond sword of sharpness 5
+    set {_knife} to a diamond sword
     set line 1 of lore of {_knife} to "1x use"
     set line 2 of lore of {_knife} to "Instant kill"
     set durability of {_knife} to 1560
@@ -772,7 +772,6 @@ every 10 seconds:
 on damage:
     if {back.traitors::*} contains attacker:
         if attacker's tool is a diamond sword:
-            cancel event
             kill victim
             add 1 to {back.stats.kills.%attacker%}
 
