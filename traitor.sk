@@ -262,10 +262,17 @@ on death:
         send player title {@death}
         remove player from {back.innocents::*}
 
-        if {back.traitors::*} contains player:
-            if damage cause is a block explosion:
+        if damage cause is a block explosion:
+            if {back.traitors::*} contains player:
                 if size of {back.traitors::*} < 2:
                     stop
+            loop {back.traitors::*}:
+                if {_t} is not set:
+                    set {_t} to loop-value
+                if (distance between player and loop-value) < (distance between player and {_t}):
+                    set {_t} to loop-value
+            add 1 to {back.stats.kills.%{_t}%}
+
         remove player from {back.traitors::*}
 
         if {back.endgame} is not true:
