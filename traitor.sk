@@ -265,7 +265,7 @@ on death:
         if damage cause is a block explosion:
             if {back.traitors::*} contains player:
                 if size of {back.traitors::*} < 2:
-                    stop
+                    wait 2 seconds
             loop {back.traitors::*}:
                 if {_t} is not set:
                     set {_t} to loop-value
