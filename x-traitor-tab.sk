@@ -1,0 +1,9 @@
+on tab completer for "traitoradmin":
+    if player has permission "traitor.admin":
+        if argument at 2 is not set:
+            add "addLocation" to completions
+            add "clearMapLocations" to completions
+            add "getWeapons" to completions
+            add "listLocations" to completions
+            add "clearAllLocations" to completions
+
