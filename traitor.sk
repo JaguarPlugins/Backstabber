@@ -67,6 +67,7 @@ on load:
     set {back.maps::Apocalypse} to "Back-Old"
     set {back.maps::Hogwarts} to "Back-Hog"
     set {back.maps::Valley} to "Back-Valley"
+    set {back.maps::Mountains} to "Back-Mountains"
     delete {back.map}
 
     clear {back.time::*}
@@ -76,6 +77,7 @@ on load:
     set {back.time::Back-Old} to 360
     set {back.time::Back-Hog} to 480   
     set {back.time::Back-Valley} to 360
+    set {back.time::Back-Mountains} to 390
 
     set {_bat} to a stick of knockback 2 and sharpness 1
     set name of {_bat} to "&bBat"
@@ -675,13 +677,15 @@ function voteMenu(p:player):
     set {_old} to mossy stone bricks named "&fApocalypse" with lore "&9by TomWoo"
     set {_hog} to brewing stand named "&fHogwarts" with lore "&9by Kiki325"
     set {_valley} to grass named "&fValley" with lore "&9by Kiki325"
-    set {_none} to red concrete named "&cNone"
-    set slot 12 of metadata tag "vote" of {_p} to {_castle}
-    set slot 13 of metadata tag "vote" of {_p} to {_pyramid}
+    set {_mountains} to snow block named "&fMountains" with lore "&9by 1THELEG1 and GabrielMeanTime"
+    set {_none} to red concrete named "&cNone" with lore "&9by Nunghung"
+    set slot 10 of metadata tag "vote" of {_p} to {_castle}
+    set slot 12 of metadata tag "vote" of {_p} to {_pyramid}
     set slot 14 of metadata tag "vote" of {_p} to {_depot}
-    set slot 21 of metadata tag "vote" of {_p} to {_old}
+    set slot 20 of metadata tag "vote" of {_p} to {_old}
     set slot 22 of metadata tag "vote" of {_p} to {_hog}
-    set slot 23 of metadata tag "vote" of {_p} to {_valley}
+    set slot 24 of metadata tag "vote" of {_p} to {_valley}
+    set slot 16 of metadata tag "vote" of {_p} to {_mountains}
     set slot 40 of metadata tag "vote" of {_p} to {_none}
     updateVote({_p})
     open (metadata tag "vote" of {_p}) to {_p}
