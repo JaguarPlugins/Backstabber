@@ -700,8 +700,9 @@ function updateVote(p:player):
             remove all enchantments from {_item}
             set {_worldname} to {back.maps::%{_name}%}
             if {_choice} = {_worldname}:
-                set loop-value to shiny {_item}
-                set name of loop-value to "&b%{_name}%"
+                if {_item} is not red concrete:
+                    set loop-value to shiny {_item}
+                    set name of loop-value to "&b%{_name}%"
 
 on inventory click:
     if event-inventory = (metadata tag "vote" of player):
