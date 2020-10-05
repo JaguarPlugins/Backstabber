@@ -244,63 +244,70 @@ every 20 ticks:
                         add {_win} to {back.stats.money.%loop-value%}
                     endGame()
 
-on death:
+on damage:
 
-    if {back.players::*} contains player:
+    if {back.players::*} contains victim:
         
-        cancel event
+        if {back.innocents::*} contains victim:
+            if {back.traitors::*} contains attacker:
+                cancel event
+                stop
 
-        add 1 to {back.stats.deaths.%player%}
-        add 1 to {back.stats.kills.%attacker%}
+        if damage >= victim's health:
+            
+            cancel event
 
-        if {back.innocents::*} contains attacker:
-            if {back.naughty::*} does not contain player:
-                if {back.innocents::*} contains player:
-                    naughty(attacker)
+            add 1 to {back.stats.deaths.%victim%}
+            add 1 to {back.stats.kills.%attacker%}
 
-        noise("die", player)
-        set player's gamemode to spectator
-        set the display name of tab of player for all players to "&r&f%player%"
-        send player title {@death}
-        remove player from {back.innocents::*}
+            if {back.innocents::*} contains attacker:
+                if {back.naughty::*} does not contain victim:
+                    if {back.innocents::*} contains victim:
+                        naughty(attacker)
 
-        if damage cause is a block explosion:
-            if {back.traitors::*} contains player:
-                if size of {back.traitors::*} < 2:
-                    wait 2 seconds
-            loop {back.traitors::*}:
-                if {_t} is not set:
-                    set {_t} to loop-value
-                if (distance between player and loop-value) < (distance between player and {_t}):
-                    set {_t} to loop-value
-            add 1 to {back.stats.kills.%{_t}%}
+            noise("die", victim)
+            set victim's gamemode to spectator
+            set the display name of tab of victim for all players to "&r&f%victim%"
+            send victim title {@death}
+            remove victim from {back.innocents::*}
 
-        remove player from {back.traitors::*}
-
-        if {back.endgame} is not true:
-            wait 1 second
-            if size of {back.innocents::*} < 1:
-                set {back.endgame} to true
-                {@victory-t}
-                set {_win} to (100 * (size of {back.players::*}))
-                add {_win} to balance of {back.traitors::*}
-                send "[&bbackstabber&f] &aYou earned ₴%{_win}% for winning as traitor" to {back.traitors::*}
+            if damage cause is a block explosion:
+                if {back.traitors::*} contains victim:
+                    if size of {back.traitors::*} < 2:
+                        wait 2 seconds
                 loop {back.traitors::*}:
-                    add {_win} to {back.stats.money.%loop-value%}
-                noise("win", {back.players::*})
-                wait 4 seconds
-                endGame() 
-            else if size of {back.traitors::*} < 1:
-                set {back.endgame} to true
-                {@victory-i}
-                set {_win} to (50 * (size of {back.players::*}))
-                add {_win} to balance of {back.innocents::*}
-                send "[&bbackstabber&f] &aYou earned ₴%{_win}% for winning as innocent" to {back.innocents::*}
-                loop {back.innocents::*}:
-                    add {_win} to {back.stats.money.%loop-value%}
-                noise("win", {back.players::*})
-                wait 4 seconds
-                endGame()
+                    if {_t} is not set:
+                        set {_t} to loop-value
+                    if (distance between victim and loop-value) < (distance between victim and {_t}):
+                        set {_t} to loop-value
+                add 1 to {back.stats.kills.%{_t}%}
+
+            remove victim from {back.traitors::*}
+
+            if {back.endgame} is not true:
+                wait 1 second
+                if size of {back.innocents::*} < 1:
+                    set {back.endgame} to true
+                    {@victory-t}
+                    set {_win} to (100 * (size of {back.players::*}))
+                    add {_win} to balance of {back.traitors::*}
+                    send "[&bbackstabber&f] &aYou earned ₴%{_win}% for winning as traitor" to {back.traitors::*}
+                    loop {back.traitors::*}:
+                        add {_win} to {back.stats.money.%loop-value%}
+                    noise("win", {back.players::*})
+                    wait 4 seconds
+                    endGame() 
+                else if size of {back.traitors::*} < 1:
+                    set {back.endgame} to true
+                    {@victory-i}
+                    set {_win} to (50 * (size of {back.players::*}))
+                    add {_win} to balance of {back.innocents::*}
+                    send "[&bbackstabber&f] &aYou earned ₴%{_win}% for winning as innocent" to {back.innocents::*}
+                    loop {back.innocents::*}:
+                        add {_win} to {back.stats.money.%loop-value%}
+                    noise("win", {back.players::*})
+                    wait 4 seconds
+                    endGame()
 
 on damage:
 
