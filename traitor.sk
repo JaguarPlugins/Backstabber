@@ -125,7 +125,7 @@ on load:
     set {_knife} to a diamond sword
     set line 1 of lore of {_knife} to "1x use"
     set line 2 of lore of {_knife} to "Instant kill"
-    set durability of {_knife} to 1560
+    set durability of {_knife} to 1
     set name of {_knife} to "&dBackstabber"
     add {_knife} to {back.tw::*}
 
@@ -148,31 +148,29 @@ on load:
 # Joining
 on rightclick on sign:
     
-    if 1st line of clicked block is "[backstabber]":
+    if 2nd line of clicked block is "BACKSTABBER":
 
-        set 1st line of clicked block to "&f[&bbackstabber&f]"
+        if 3rd line of clicked block is "&3>&b JOIN GAME &3<":
 
-    if 1st line of clicked block is "&f[&bbackstabber&f]":
+            if {back.karma::%player%} is not set:
+                set {back.karma::%player%} to 100
+            if {back.karma::%player%} > 0:
+                if size of {back.players::*} < 8: 
+                    if {back.running} is not true:
+                        if {back.players::*} does not contain player:
 
-        if {back.karma::%player%} is not set:
-            set {back.karma::%player%} to 100
-        if {back.karma::%player%} > 0:
-            if size of {back.players::*} < 8: 
-                if {back.running} is not true:
-                    if {back.players::*} does not contain player:
+                            if {back.map} is not set:
+                                set {back.map} to countVotes() parsed as world
+                            joinGame(player, {back.map})
 
-                        if {back.map} is not set:
-                            set {back.map} to countVotes() parsed as world
-                        joinGame(player, {back.map})
-
+                        else:
+                            send {@already}
                     else:
-                        send {@already}
+                        send {@running}
                 else:
-                    send {@running}
+                    send {@full}
             else:
-                send {@full}
-        else:
-            send {@kick}
+                send {@kick}
 
 function joinLobby(p:player):
 
@@ -248,7 +246,7 @@ on damage:
 
     if {back.players::*} contains victim:
         
-        if {back.innocents::*} contains victim:
+        if {back.traitors::*} contains victim:
             if {back.traitors::*} contains attacker:
                 cancel event
                 stop
@@ -730,6 +728,12 @@ command backstabber-vote:
     executable by: players
     trigger:
         voteMenu(player)
+
+on rightclick on sign:
+
+    if 2nd line of clicked block is "BACKSTABBER":
+        if 3rd line of clicked block is "&3>&b VOTE &3<":
+            voteMenu(player)
 
 command backstabber-voteinfo:
     permission: traitor.info
