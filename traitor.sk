@@ -125,14 +125,14 @@ on load:
     set {_knife} to a diamond sword
     set line 1 of lore of {_knife} to "1x use"
     set line 2 of lore of {_knife} to "Instant kill"
-    set durability of {_knife} to 1
+    set damage value of {_knife} to 1560
     set name of {_knife} to "&dBackstabber"
     add {_knife} to {back.tw::*}
 
     set {_trident} to a trident of loyalty 3
     set name of {_trident} to "&dTrident"
     set line 1 of lore of {_trident} to "Limited use"
-    set durability of {_trident} to 240
+    set damage value of {_trident} to 240
     add {_trident} to {back.tw::*}
 
     set {_boomer} to blaze powder
